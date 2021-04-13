@@ -13,7 +13,7 @@ public class RadialMenuItem : MonoBehaviour
     public static UnityAction<RadialMenuItemMetadata.IItemType> OnSelect;
     public static UnityAction OnConfirm;
 
-    public float Radius = 0.1f;
+    public float Radius = 0.035f;
     public float AnimationTime = 0.2f;
     public List<RadialMenuItem> Children { private set; get; } = new List<RadialMenuItem>();
 

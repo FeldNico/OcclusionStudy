@@ -45,6 +45,12 @@ public class InteractionOrb : MonoBehaviour
 
         _camera = Camera.main;
 
+        _collider = GetComponent<Collider>();
+        if (_collider)
+        {
+            DestroyImmediate(_collider);
+        }
+        
         if (IsPhysicalMenu)
         {
             _rigidbody = GetComponent<Rigidbody>();
@@ -63,6 +69,8 @@ public class InteractionOrb : MonoBehaviour
 
             _manipulator.ManipulationType = ManipulationHandFlags.OneHanded;
         
+            _collider = gameObject.AddComponent<SphereCollider>();
+            
             _nearInteraction = GetComponent<NearInteractionGrabbable>();
             if (_nearInteraction == null)
             {
@@ -87,12 +95,6 @@ public class InteractionOrb : MonoBehaviour
             }
             
         }
-        
-        _collider = GetComponent<Collider>();
-        if (_collider == null)
-        {
-            _collider = gameObject.AddComponent<SphereCollider>();
-        }
 
         _collider.isTrigger = true;
 
@@ -114,6 +116,10 @@ public class InteractionOrb : MonoBehaviour
             item = go.AddComponent<RadialMenuItem>();
         }
 
+        if (metadata.Radius > 0f)
+        {
+            item.Radius = metadata.Radius;
+        }
         item.Type = metadata.Type;
 
         if (metadata.Children != null)
@@ -127,7 +133,7 @@ public class InteractionOrb : MonoBehaviour
         return item;
     }
 
-    private void OnManipulationStart(ManipulationEventData eventData)
+    public void OnManipulationStart(ManipulationEventData eventData)
     {
         _isCurrentlyManipulated = true;
         MenuRoot.transform.parent = null;
@@ -138,7 +144,7 @@ public class InteractionOrb : MonoBehaviour
         OnGrabStart?.Invoke();
     }
 
-    private void OnManipulationEnd(ManipulationEventData eventData)
+    public void OnManipulationEnd(ManipulationEventData eventData)
     {
         if (CurrentSelected != null)
         {

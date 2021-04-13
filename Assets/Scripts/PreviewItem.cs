@@ -13,47 +13,52 @@ public class PreviewItem : MonoBehaviour
 
     public RadialMenuItemMetadata.ColourType ColourType;
     public RadialMenuItemMetadata.ShapeType ShapeType;
-    public RadialMenuItemMetadata.CountType CountType;
+    public RadialMenuItemMetadata.TextureType TextureType;
 
     private void Start()
     {
+        var sphereDummy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sphereDummy.name = "SphereDummy";
+        sphereDummy.GetComponent<Renderer>().enabled = false;
+        sphereDummy.GetComponent<Collider>().enabled = false;
+        
         FindObjectOfType<ResultManager>().OnStart += () =>
         {
-            ColourType = new RadialMenuItemMetadata.ColourType() {Color = Color.grey};
-            ShapeType = new RadialMenuItemMetadata.ShapeType() {MeshGameObjectName = "ShapeSphere"};
-            CountType = new RadialMenuItemMetadata.CountType() {Count = 1};
+            ColourType = new RadialMenuItemMetadata.ColourType() {Color = Color.cyan};
+            ShapeType = new RadialMenuItemMetadata.ShapeType() {MeshGameObjectName = "SphereDummy"};
+            TextureType = new RadialMenuItemMetadata.TextureType() {MaterialGameObjectName = "InteractionOrb"};
             
-            FindObjectOfType<Target>().GenerateTargets(ColourType, ShapeType, CountType);
+            FindObjectOfType<Target>().GenerateTargets(ColourType, ShapeType, TextureType);
             RandomizeTypes();
         };
     }
 
     public void RandomizeTypes()
     {
-        var colourList = new List<Color>() {Color.blue, Color.green, Color.yellow, Color.red};
+        var colourList = new List<Color>() {new Color(1,165f/255,0), Color.green,  new Color(128f/256,0,128f/256), Color.white};
         colourList = colourList.Where(color => color != ColourType.Color).ToList();
         ColourType = new RadialMenuItemMetadata.ColourType()
         {
             Color = colourList[_random.Next(0, colourList.Count)]
         };
 
-        var shapeList = new List<string>() {"ShapeSphere", "ShapeCube", "ShapeCylinder"};
+        var shapeList = new List<string>() {"ShapeCapsule", "ShapeCube", "ShapeCylinder"};
         shapeList = shapeList.Where(s => s != ShapeType.MeshGameObjectName).ToList();
         ShapeType = new RadialMenuItemMetadata.ShapeType()
         {
             MeshGameObjectName = shapeList[_random.Next(0, shapeList.Count)]
         };
 
-        var countList = new List<int>() {1, 3, 5, 10};
-        countList = countList.Where(s => s != CountType.Count).ToList();
-        CountType = new RadialMenuItemMetadata.CountType()
+        var countList = new List<string>() {"TextureStar","TextureCircle","TextureLine","TextureRaster"};
+        countList = countList.Where(s => s != TextureType.MaterialGameObjectName).ToList();
+        TextureType = new RadialMenuItemMetadata.TextureType()
         {
-            Count = countList[_random.Next(0, countList.Count)]
+            MaterialGameObjectName = countList[_random.Next(0, countList.Count)]
         };
 
         HandleType(ColourType);
         HandleType(ShapeType);
-        HandleType(CountType);
+        HandleType(TextureType);
     }
 
     private void HandleType(RadialMenuItemMetadata.IItemType type)
@@ -67,10 +72,13 @@ public class PreviewItem : MonoBehaviour
                     GameObject.Find(ShapeType.MeshGameObjectName).GetComponent<MeshFilter>().mesh;
                 break;
             }
-            case RadialMenuItemMetadata.CountType t:
+            case RadialMenuItemMetadata.TextureType t:
             {
-                CountType = (RadialMenuItemMetadata.CountType) type;
-                CountText.text = "x" + CountType.Count;
+                TextureType = (RadialMenuItemMetadata.TextureType) type;
+                var color = GetComponent<Renderer>().material.color;
+                GetComponent<Renderer>().material = GameObject.Find(TextureType.MaterialGameObjectName)
+                    .GetComponent<Renderer>().material;
+                GetComponent<Renderer>().material.color = color;
                 break;
             }
             case RadialMenuItemMetadata.ColourType t:

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 406998029647156110}
   - component: {fileID: 406998029647156111}
   m_Layer: 0
-  m_Name: ShapeSpherePrefab
+  m_Name: TexturePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59,7 +59,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 4db3964f47f006e448b5c22b24de4fb7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

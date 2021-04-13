@@ -8,9 +8,11 @@ public class Target : MonoBehaviour
 {
     private System.Random _random = new System.Random();
 
+    public int TargetCount = 30;
+    
     public RadialMenuItemMetadata.ColourType ColourType;
     public RadialMenuItemMetadata.ShapeType ShapeType;
-    public RadialMenuItemMetadata.CountType CountType;
+    public RadialMenuItemMetadata.TextureType TextureType;
 
     public void Start()
     {
@@ -20,36 +22,35 @@ public class Target : MonoBehaviour
         };
     }
 
-    public void GenerateTargets(RadialMenuItemMetadata.ColourType colorType, RadialMenuItemMetadata.ShapeType shapeType, RadialMenuItemMetadata.CountType countType)
+    public void GenerateTargets(RadialMenuItemMetadata.ColourType colorType, RadialMenuItemMetadata.ShapeType shapeType, RadialMenuItemMetadata.TextureType textureType)
     {
         ColourType =  colorType;
         ShapeType = shapeType;
-        CountType = countType;
-        
-        var count = countType.Count;
+        TextureType = textureType;
+
+        var material = GameObject.Find(textureType.MaterialGameObjectName).GetComponent<Renderer>().material;
         Mesh mesh = GameObject.Find(shapeType.MeshGameObjectName).GetComponent<MeshFilter>().mesh;;
         Color color = colorType.Color;
 
-        foreach (var child in GetComponentsInChildren<Transform>())
+        if (transform.childCount == 0)
         {
-            if (child != transform)
+            for (int i = 0; i < TargetCount; i++)
             {
-                Destroy(child.gameObject);
+                var go = new GameObject();
+                go.transform.localScale = Vector3.one * 0.03f;
+                go.transform.parent = transform;
+                go.transform.localPosition = new Vector3((float) (_random.NextDouble()*0.5f- 0.25f),
+                    (float) (_random.NextDouble()*0.5f- 0.25f),
+                    (float) (_random.NextDouble()*0.5f- 0.25f));
+                go.AddComponent<MeshFilter>();
+                go.AddComponent<MeshRenderer>();
             }
         }
-
-        for (int i = 0; i < count; i++)
+        foreach (var child in GetComponentsInChildren<Renderer>())
         {
-            var go = new GameObject();
-            go.transform.localScale = Vector3.one * 0.03f;
-            go.transform.parent = transform;
-            go.transform.localPosition = new Vector3((float) (_random.NextDouble()*0.5f- 0.25f),
-                (float) (_random.NextDouble()*0.5f- 0.25f),
-                (float) (_random.NextDouble()*0.5f- 0.25f));
-            var filter = go.AddComponent<MeshFilter>();
-            filter.mesh = mesh;
-            var renderer = go.AddComponent<MeshRenderer>();
-            renderer.material.color = color;
+            child.GetComponent<MeshFilter>().mesh = mesh;
+            child.material = material;
+            child.material.color = color;
         }
     }
 
@@ -80,12 +81,14 @@ public class Target : MonoBehaviour
                 }
                 break;
             }
-            case RadialMenuItemMetadata.CountType t:
+            case RadialMenuItemMetadata.TextureType t:
             {
-                CountType = (RadialMenuItemMetadata.CountType) type;
-
-                GenerateTargets(ColourType, ShapeType,
-                    new RadialMenuItemMetadata.CountType() {Count = CountType.Count});
+                TextureType = (RadialMenuItemMetadata.TextureType) type;
+                foreach (var child in children)
+                {
+                    child.GetComponent<Renderer>().material = GameObject.Find(TextureType.MaterialGameObjectName).GetComponent<Renderer>().material;
+                    child.GetComponent<Renderer>().material.color = ColourType.Color;
+                }
                 break;
             }
         }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class RadialMenuItemMetadata
 {
 
-    public interface IItemType
+    public abstract class IItemType
     {
     }
 
@@ -14,9 +14,9 @@ public class RadialMenuItemMetadata
         public Color Color;
     }
 
-    public class CountType : IItemType
+    public class TextureType : IItemType
     {
-        public int Count;
+        public string MaterialGameObjectName;
     }
 
     public class ShapeType : IItemType
@@ -30,15 +30,16 @@ public class RadialMenuItemMetadata
         {
             Name = "Colour",
             Prefab = "ColourPrefab",
+            Radius = 0.07f,
             Children = new List<RadialMenuItemMetadata>()
             {
                 new RadialMenuItemMetadata()
                 {
-                    Name = "ColourRed",
-                    Prefab = "ColourRedPrefab",
+                    Name = "ColourOrange",
+                    Prefab = "ColourOrangePrefab",
                     Type = new ColourType()
                     {
-                        Color = Color.red
+                        Color = new Color(1,165f/255,0)
                     }
                 },
                 new RadialMenuItemMetadata()
@@ -52,20 +53,20 @@ public class RadialMenuItemMetadata
                 },
                 new RadialMenuItemMetadata()
                 {
-                    Name = "ColourBlue",
-                    Prefab = "ColourBluePrefab",
+                    Name = "ColourPurple",
+                    Prefab = "ColourPurplePrefab",
                     Type = new ColourType()
                     {
-                        Color = Color.blue
+                        Color = new Color(128f/256,0,128f/256)
                     }
                 },
                 new RadialMenuItemMetadata()
                 {
-                    Name = "ColourYellow",
-                    Prefab = "ColourYellowPrefab",
+                    Name = "ColourWhite",
+                    Prefab = "ColourWhitePrefab",
                     Type = new ColourType()
                     {
-                        Color = Color.yellow
+                        Color = Color.white
                     }
                 }
             }
@@ -74,15 +75,16 @@ public class RadialMenuItemMetadata
         {
             Name = "Shape",
             Prefab = "ShapePrefab",
+            Radius = 0.07f,
             Children = new List<RadialMenuItemMetadata>()
             {
                 new RadialMenuItemMetadata()
                 {
-                    Name = "ShapeSphere",
-                    Prefab = "ShapeSpherePrefab",
+                    Name = "ShapeCapsule",
+                    Prefab = "ShapeCapsulePrefab",
                     Type = new ShapeType()
                     {
-                        MeshGameObjectName = "ShapeSphere"
+                        MeshGameObjectName = "ShapeCapsule"
                     }
                 },
                 new RadialMenuItemMetadata()
@@ -112,44 +114,45 @@ public class RadialMenuItemMetadata
         },
         new RadialMenuItemMetadata()
         {
-            Name = "Count",
-            Prefab = "CountPrefab",
+            Name = "Texture",
+            Prefab = "TexturePrefab",
+            Radius = 0.07f,
             Children = new List<RadialMenuItemMetadata>()
             {
                 new RadialMenuItemMetadata()
                 {
-                    Name = "CountOne",
-                    Prefab = "CountOnePrefab",
-                    Type = new CountType()
+                    Name = "TextureStar",
+                    Prefab = "StarPrefab",
+                    Type = new TextureType()
                     {
-                        Count = 1
+                        MaterialGameObjectName = "TextureStar"
                     }
                 },
                 new RadialMenuItemMetadata()
                 {
-                    Name = "CountThree",
-                    Prefab = "CountThreePrefab",
-                    Type = new CountType()
+                    Name = "TextureCircle",
+                    Prefab = "CirclePrefab",
+                    Type = new TextureType()
                     {
-                        Count = 3
+                        MaterialGameObjectName = "TextureCircle"
                     }
                 },
                 new RadialMenuItemMetadata()
                 {
-                    Name = "CountFive",
-                    Prefab = "CountFivePrefab",
-                    Type = new CountType()
+                    Name = "TextureLine",
+                    Prefab = "LinesPrefab",
+                    Type = new TextureType()
                     {
-                        Count = 5
+                        MaterialGameObjectName = "TextureLine"
                     }
                 },
                 new RadialMenuItemMetadata()
                 {
-                    Name = "CountTen",
-                    Prefab = "CountTenPrefab",
-                    Type = new CountType()
+                    Name = "TextureRaster",
+                    Prefab = "RasterPrefab",
+                    Type = new TextureType()
                     {
-                        Count = 10
+                        MaterialGameObjectName = "TextureRaster"
                     }
                 }
             }
@@ -158,6 +161,7 @@ public class RadialMenuItemMetadata
 
     public string Name;
     public string Prefab;
+    public float Radius = -1f;
     public IItemType Type;
     public List<RadialMenuItemMetadata> Children;
 }

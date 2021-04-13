@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.MixedReality.Toolkit.Experimental.UI;
+using Microsoft.MixedReality.Toolkit.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -89,6 +90,32 @@ public class ResultManager : MonoBehaviour
                 TrialTime = Time.time,
                 TrialTimeShort = 0,
             };
+
+            #if UNITY_EDITOR
+            StartCoroutine(Wait());
+            IEnumerator Wait()
+            {
+                yield return new WaitForSeconds(1f);
+                if (_orb.IsPhysicalMenu)
+                {
+                    _orb.OnManipulationStart(null);
+                }
+                else
+                {
+                    _orb.GetComponent<TouchHandler>().OnTouchStarted(null);
+                }
+                yield return new WaitForSeconds(2f);
+                if (_orb.IsPhysicalMenu)
+                {
+                    _orb.transform.position = GameObject.Find("Shape").transform.position;
+                }
+                else
+                {
+                    GameObject.Find("Shape").GetComponent<TouchHandler>().OnTouchStarted(null);
+                }
+            }
+            #endif
+            
         };
     }
 
@@ -112,7 +139,7 @@ public class ResultManager : MonoBehaviour
         _currentResult.TrialTimeShort = Time.time - _currentResult.TrialTimeShort;
         _currentResult.IsCorrect = _target.ColourType.Color == _previewItem.ColourType.Color &&
                                    _target.ShapeType.MeshGameObjectName == _previewItem.ShapeType.MeshGameObjectName &&
-                                   _target.CountType.Count == _previewItem.CountType.Count;
+                                   _target.TextureType.MaterialGameObjectName == _previewItem.TextureType.MaterialGameObjectName;
         
         PrintResult(_currentResult);
         
@@ -140,9 +167,9 @@ public class ResultManager : MonoBehaviour
                 }
                 break;
             }
-            case RadialMenuItemMetadata.CountType t:
+            case RadialMenuItemMetadata.TextureType t:
             {
-                if (_target.CountType.Count != ((RadialMenuItemMetadata.CountType) type).Count)
+                if (_target.TextureType.MaterialGameObjectName != ((RadialMenuItemMetadata.TextureType) type).MaterialGameObjectName)
                 {
                     _currentResult.Errors++;
                 }
