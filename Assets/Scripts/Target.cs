@@ -16,10 +16,7 @@ public class Target : MonoBehaviour
 
     public void Start()
     {
-        RadialMenuItem.OnSelect += (type) =>
-        {
-            SetType(type);
-        };
+        RadialMenuItem.OnSelect += SetType;
     }
 
     public void GenerateTargets(RadialMenuItemMetadata.ColourType colorType, RadialMenuItemMetadata.ShapeType shapeType, RadialMenuItemMetadata.TextureType textureType)
@@ -92,5 +89,10 @@ public class Target : MonoBehaviour
                 break;
             }
         }
+    }
+
+    private void OnDestroy()
+    {
+        RadialMenuItem.OnSelect -= SetType;
     }
 }

@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/0_0.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/Tablet.unity
+    guid: d39df8af84cbe0a43b4a975e1a58fab2
   m_configObjects:
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: 8d5551e31fae17441b10bce6dd580937, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 710b1e0737eeb634aa828e19830b3112, type: 2}

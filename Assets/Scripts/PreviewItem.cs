@@ -7,9 +7,8 @@ using UnityEngine;
 
 public class PreviewItem : MonoBehaviour
 {
-    public TMP_Text CountText;
-
     private System.Random _random = new System.Random();
+    private GameObject _sphereDummy;
 
     public RadialMenuItemMetadata.ColourType ColourType;
     public RadialMenuItemMetadata.ShapeType ShapeType;
@@ -17,20 +16,22 @@ public class PreviewItem : MonoBehaviour
 
     private void Start()
     {
-        var sphereDummy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphereDummy.name = "SphereDummy";
-        sphereDummy.GetComponent<Renderer>().enabled = false;
-        sphereDummy.GetComponent<Collider>().enabled = false;
+        _sphereDummy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        _sphereDummy.name = "SphereDummy";
+        _sphereDummy.GetComponent<Renderer>().enabled = false;
+        _sphereDummy.GetComponent<Collider>().enabled = false;
         
-        FindObjectOfType<ResultManager>().OnStart += () =>
-        {
-            ColourType = new RadialMenuItemMetadata.ColourType() {Color = Color.cyan};
-            ShapeType = new RadialMenuItemMetadata.ShapeType() {MeshGameObjectName = "SphereDummy"};
-            TextureType = new RadialMenuItemMetadata.TextureType() {MaterialGameObjectName = "InteractionOrb"};
+        FindObjectOfType<ResultManager>().OnStart += OnStart;
+    }
+
+    private void OnStart()
+    {
+        ColourType = new RadialMenuItemMetadata.ColourType() {Color = Color.cyan};
+        ShapeType = new RadialMenuItemMetadata.ShapeType() {MeshGameObjectName = "SphereDummy"};
+        TextureType = new RadialMenuItemMetadata.TextureType() {MaterialGameObjectName = "InteractionOrb(Clone)"};
             
-            FindObjectOfType<Target>().GenerateTargets(ColourType, ShapeType, TextureType);
-            RandomizeTypes();
-        };
+        FindObjectOfType<Target>().GenerateTargets(ColourType, ShapeType, TextureType);
+        RandomizeTypes();
     }
 
     public void RandomizeTypes()
@@ -88,5 +89,19 @@ public class PreviewItem : MonoBehaviour
                 break;
             }
         }
+    }
+
+    private void OnDestroy()
+    {
+        var resultManager = FindObjectOfType<ResultManager>();
+        if (resultManager)
+        {
+            resultManager.OnStart -= OnStart;
+        }
+        if (_sphereDummy != null)
+        {
+            DestroyImmediate(_sphereDummy);
+        }
+        
     }
 }

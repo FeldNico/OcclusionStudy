@@ -35,7 +35,6 @@ public class RadialMenuItem : MonoBehaviour
         _target = FindObjectOfType<Target>();
         _camera = Camera.main;
         
-
         _renderer = GetComponent<Renderer>();
         if (_renderer != null)
             _renderer.enabled = false;

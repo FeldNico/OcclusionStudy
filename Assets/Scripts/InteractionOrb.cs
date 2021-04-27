@@ -1,11 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UI;
 using Microsoft.MixedReality.Toolkit.Utilities;
+using Mirror;
 using Newtonsoft.Json;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,8 +17,8 @@ public class InteractionOrb : MonoBehaviour
     public UnityAction OnGrabStart;
     public UnityAction OnGrabEnd;
 
-    public bool IsPhysicalMenu = true;
-    
+    public bool IsPhysicalMenu;
+    public bool HasOcclusion;
     
     [HideInInspector]
     public RadialMenuItem CurrentSelected;
@@ -33,9 +36,28 @@ public class InteractionOrb : MonoBehaviour
     private Color _standardColor;
     private bool _isCurrentlyManipulated = false;
 
-    // Start is called before the first frame update
-    void Start()
+
+    private void Start()
     {
+        _camera = Camera.main;
+    }
+
+    public void Initialize(bool IsOcclusionEnabled, bool IsPhysical)
+    {
+        MixedRealityHandTrackingProfile handTrackingProfile = CoreServices.InputSystem?.InputSystemProfile.HandTrackingProfile;
+        if (handTrackingProfile != null)
+        {
+            handTrackingProfile.EnableHandMeshVisualization = IsOcclusionEnabled;
+        }
+
+        HasOcclusion = IsOcclusionEnabled;
+        IsPhysicalMenu = IsPhysical;
+        
+        if (MenuRoot != null)
+        {
+            DestroyImmediate(MenuRoot.gameObject);
+        }
+        
         MenuRoot = new GameObject("MenuRoot").AddComponent<RadialMenuItem>();
         MenuRoot.transform.parent = transform;
         MenuRoot.transform.localPosition = Vector3.zero;
@@ -43,15 +65,13 @@ public class InteractionOrb : MonoBehaviour
         MenuRoot.transform.localScale = Vector3.one;
         MenuRoot.Radius = 0.15f;
 
-        _camera = Camera.main;
-
         _collider = GetComponent<Collider>();
         if (_collider)
         {
             DestroyImmediate(_collider);
         }
         
-        if (IsPhysicalMenu)
+        if (IsPhysical)
         {
             _rigidbody = GetComponent<Rigidbody>();
             if (_rigidbody == null)
@@ -146,18 +166,11 @@ public class InteractionOrb : MonoBehaviour
 
     public void OnManipulationEnd(ManipulationEventData eventData)
     {
-        if (CurrentSelected != null)
-        {
-            CurrentSelected.Select();
-        }
-
         MenuRoot.Hide(false);
 
         GetComponent<Renderer>().material.color = _standardColor;
 
         OnGrabEnd?.Invoke();
-
-        CurrentSelected = null;
         
         StartCoroutine(Animate());
         IEnumerator Animate()
@@ -174,7 +187,11 @@ public class InteractionOrb : MonoBehaviour
             MenuRoot.transform.parent = transform;
             MenuRoot.transform.localPosition = Vector3.zero;
         }
-        
+        if (CurrentSelected != null)
+        {
+            CurrentSelected.Select();
+        }
+        CurrentSelected = null;
         
     }
 
@@ -219,5 +236,16 @@ public class InteractionOrb : MonoBehaviour
         {
             GetComponent<Renderer>().material.color = _standardColor;
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (MenuRoot != null)
+        {
+            DestroyImmediate(MenuRoot.gameObject);
+        }
+
+        OnGrabEnd = null;
+        OnGrabStart = null;
     }
 }
