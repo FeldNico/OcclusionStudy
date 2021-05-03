@@ -184,7 +184,10 @@ public class ResultManager : MonoBehaviour
             else
             {
                 _hololensManager.MainText.text = "Durchlauf beendet.";
-                NetworkClient.Send(new NetworkMessages.Reset());
+                NetworkClient.Send(new NetworkMessages.Questionnaire()
+                {
+                    Type = _hololensManager.Type
+                });
                 Destroy(_orb.gameObject);
                 Destroy(_target.gameObject);
                 Destroy(_previewItem.gameObject);

@@ -44,12 +44,24 @@ public class MasterManager : MonoBehaviour
         {
             IsCodenameSetToggle.isOn = true;
             _codename = codename.Codename;
-            //_networkManager.GetHololensConnection().Send(codename);
         });
         
         NetworkServer.RegisterHandler<NetworkMessages.Reset>(reset =>
         {
             MainText.text = "Versuch beendet.";
+        });
+        
+        NetworkServer.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>
+        {
+            if (string.IsNullOrEmpty(questionnaire.Type))
+            {
+                MainText.text = "Questionnaire ausgefüllt.";
+            }
+            else
+            {
+                MainText.text = "Questionnaire wird bearbeitet.";
+                _networkManager.GetTabletConnection().Send(questionnaire);
+            }
         });
 
         ReadyToTest += () =>
@@ -150,9 +162,14 @@ public class MasterManager : MonoBehaviour
             IsOcclusionEnabled = setup == "A" || setup == "C",
             RestingTime = Convert.ToSingle(RestingTimeInput.text),
             TrialTime = Convert.ToSingle(TrialTimeInput.text),
-            Codename = _codename
+            Codename = _codename,
+            Type = setup
         };
         _networkManager.GetHololensConnection().Send(msg);
+        _networkManager.GetTabletConnection().Send(new NetworkMessages.Questionnaire
+        {
+            Type = setup
+        });
         MainText.text = "";
     }
     

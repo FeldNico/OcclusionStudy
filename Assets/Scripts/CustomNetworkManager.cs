@@ -42,8 +42,13 @@ public class CustomNetworkManager : NetworkManager
         if (DeviceType == NetworkMessages.NetworkDeviceType.Hololens ||
             DeviceType == NetworkMessages.NetworkDeviceType.Tablet)
         {
-            Debug.Log("Reconnecting");
-            StartClient();
+            StartCoroutine(WaitForReconnect());
+            IEnumerator WaitForReconnect()
+            {
+                yield return new WaitForSeconds(1f);
+                Debug.Log("Reconnecting");
+                StartClient();
+            }
         }
     }
 

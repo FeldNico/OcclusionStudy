@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.MixedReality.Toolkit;
+using Microsoft.MixedReality.Toolkit.Input;
 using Mirror;
 using TMPro;
 using UnityEngine;
 
-public class HololensManager : MonoBehaviour
+public class HololensManager : MonoBehaviour, IMixedRealityGestureHandler<Vector3>
 {
     public TMP_Text MainText;
     public GameObject InteractionOrbPrefab;
@@ -15,8 +17,11 @@ public class HololensManager : MonoBehaviour
     public GameObject TargetPrefab;
     public GameObject TargetAnchor;
 
+    public string Type;
+    
     public void Start()
     {
+
         FindObjectOfType<CustomNetworkManager>().OnConneting += () =>
         {
             NetworkClient.RegisterHandler<NetworkMessages.StartTrial>(trial =>
@@ -24,6 +29,7 @@ public class HololensManager : MonoBehaviour
                 StartTrial(trial.IsIntroduction, trial.IsOcclusionEnabled, trial.IsPhysical, trial.Count,
                     trial.TrialTime, trial.RestingTime);
                 FindObjectOfType<ResultManager>().Codename = trial.Codename;
+                Type = trial.Type;
             });
             
             NetworkClient.RegisterHandler<NetworkMessages.ConfirmCodename>(codename =>
@@ -102,5 +108,45 @@ public class HololensManager : MonoBehaviour
             yield return new WaitForEndOfFrame();
             FindObjectOfType<ResultManager>().Initialize(isIntroduction,count,trialTime,restingTime);
         }
+    }
+
+    public void OnGestureStarted(InputEventData eventData)
+    {
+        MainText.text = "Started "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
+    }
+
+    public void OnGestureUpdated(InputEventData eventData)
+    {
+        MainText.text = "Updated "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
+    }
+
+    public void OnGestureCompleted(InputEventData eventData)
+    {
+        MainText.text = "Completed "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
+    }
+
+    public void OnGestureCanceled(InputEventData eventData)
+    {
+        MainText.text = "Canceled "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
+    }
+
+    private void OnEnable()
+    {
+        CoreServices.InputSystem.RegisterHandler<IMixedRealityGestureHandler<Vector3>>(this);
+    }
+
+    private void OnDisable()
+    {
+        CoreServices.InputSystem.UnregisterHandler<IMixedRealityGestureHandler<Vector3>>(this);
+    }
+
+    public void OnGestureUpdated(InputEventData<Vector3> eventData)
+    {
+        MainText.text = "Updated "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
+    }
+
+    public void OnGestureCompleted(InputEventData<Vector3> eventData)
+    {
+        MainText.text = "Completed "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
     }
 }

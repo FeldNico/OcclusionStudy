@@ -19,6 +19,7 @@ public class NetworkMessages : MonoBehaviour
         public float TrialTime;
         public float RestingTime;
         public string Codename;
+        public string Type;
     };
 
     public struct ConfirmCodename : NetworkMessage
@@ -41,5 +42,10 @@ public class NetworkMessages : MonoBehaviour
     public struct RegisterDeviceType: NetworkMessage
     {
         public NetworkDeviceType type;
+    }
+
+    public struct Questionnaire : NetworkMessage
+    {
+        public string Type;
     }
 }
