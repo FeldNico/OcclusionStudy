@@ -1,14 +1,8 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UI;
 using Microsoft.MixedReality.Toolkit.Utilities;
-using Mirror;
-using Newtonsoft.Json;
-using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -31,16 +25,9 @@ public class InteractionOrb : MonoBehaviour
     private NearInteractionGrabbable _nearInteraction;
     private Collider _collider;
     private Rigidbody _rigidbody;
-    private Camera _camera;
-    
+
     private Color _standardColor;
     private bool _isCurrentlyManipulated = false;
-
-
-    private void Start()
-    {
-        _camera = Camera.main;
-    }
 
     public void Initialize(bool IsOcclusionEnabled, bool IsPhysical)
     {
@@ -186,9 +173,17 @@ public class InteractionOrb : MonoBehaviour
             _isCurrentlyManipulated = false;
             MenuRoot.transform.parent = transform;
             MenuRoot.transform.localPosition = Vector3.zero;
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+            if (_rigidbody)
+            {
+                _rigidbody.velocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;
+            }
         }
         if (CurrentSelected != null)
         {
+            GetComponent<AudioSource>().PlayOneShot(FindObjectOfType<HololensManager>().SelectSound);
             CurrentSelected.Select();
         }
         CurrentSelected = null;
@@ -206,6 +201,7 @@ public class InteractionOrb : MonoBehaviour
         if (_isCurrentlyManipulated)
         {
             GetComponent<Renderer>().material.color = Color.green;
+            GetComponent<AudioSource>().PlayOneShot(FindObjectOfType<HololensManager>().HoverSound);
         }
         else
         {

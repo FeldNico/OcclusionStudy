@@ -42,13 +42,13 @@ public class ResultManager : MonoBehaviour
     
     private Result _currentResult = null;
     private bool _isIntroduction = false;
-    private int _maxCount = 0;
-    private int _count = 0;
-    private float _trialTime = 0f;
-    private float _trialEndTime = 0f;
+    private int _maxIterations = 0;
+    private int _iterations = 0;
+    private int _trialCount = 0;
+    private float _maxTrialCount = 0f;
     private float _restingTime;
 
-    public void Initialize(bool isIntroduction, int count, float trialTime, float restingTime)
+    public void Initialize(bool isIntroduction, int iterations, int trialCount, float restingTime)
     {
         _hololensManager.MainText.text = "";
         
@@ -59,10 +59,10 @@ public class ResultManager : MonoBehaviour
         _orb.OnGrabStart += OnGrabStart;
         _orb.OnGrabEnd += OnGrabEnd;
         _isIntroduction = isIntroduction;
-        _maxCount = count;
-        _count = 0;
-        _trialTime = trialTime;
-        _trialEndTime = Time.time+trialTime;
+        _maxIterations = iterations;
+        _iterations = 0;
+        _maxTrialCount = trialCount;
+        _trialCount = 0;
         _restingTime = restingTime;
         
         OnStart?.Invoke();
@@ -145,14 +145,16 @@ public class ResultManager : MonoBehaviour
             PrintResult(_currentResult);
         }
 
-        if (_trialEndTime >= Time.time)
+        _trialCount++;
+        if (_trialCount < _maxTrialCount)
         {
             OnStart?.Invoke();
         }
         else
         {
-            _count++;
-            if (_count < _maxCount)
+            _trialCount = 0;
+            _iterations++;
+            if (_iterations < _maxIterations || _isIntroduction)
             {
                 _restingCoroutine = StartCoroutine(RestingTime());
                 IEnumerator RestingTime()
@@ -172,7 +174,6 @@ public class ResultManager : MonoBehaviour
                     _hololensManager.MainText.text = "Es geht weiter in: 1 Sekunden";
                     yield return new WaitForSeconds(1f);
                     _hololensManager.MainText.text = "";
-                    _trialEndTime = Time.time + _trialTime;
                     _restingCoroutine = null;
                     if (_orb != null)
                     {
@@ -183,7 +184,7 @@ public class ResultManager : MonoBehaviour
             }
             else
             {
-                _hololensManager.MainText.text = "Durchlauf beendet.";
+                _hololensManager.MainText.text = "Durchlauf beendet.\nBitte nehmen Sie die Brille ab und begeben sich wieder zum Tablet.";
                 NetworkClient.Send(new NetworkMessages.Questionnaire()
                 {
                     Type = _hololensManager.Type
@@ -228,12 +229,6 @@ public class ResultManager : MonoBehaviour
 
     private void PrintResult(Result result)
     {
-#if UNITY_EDITOR
-        if (!Directory.Exists(Path.Combine(Application.dataPath, "Results")))
-        {
-            Directory.CreateDirectory(Path.Combine(Application.dataPath, "Results"));
-        }
-
         var scenario = "";
         if (_orb.IsPhysicalMenu)
         {
@@ -246,18 +241,18 @@ public class ResultManager : MonoBehaviour
         
         var filename = result.Name + "_" + scenario + "_" + DateTime.Now.Day +
                        "_" + DateTime.Now.Month + "_" + DateTime.Now.Year+".csv";
-        var path = Path.Combine(Application.dataPath, "Results",filename);
+#if UNITY_EDITOR
+        var platformDependendPath = Application.dataPath;
 #else
-        if (!Directory.Exists(Path.Combine(Application.persistentDataPath, "Results")))
-        {
-            Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, "Results"));
-        }
-
-        var filename = result.Name + "_" + DateTime.Now.Day +
-                       "_" + DateTime.Now.Month + "_" + DateTime.Now.Year+".csv";
-        var path = Path.Combine(Application.persistentDataPath, "Results",filename);
+        var platformDependendPath = Application.persistentDataPath;
 #endif
-       
+        if (!Directory.Exists(Path.Combine(platformDependendPath, "Results")))
+        {
+            Directory.CreateDirectory(Path.Combine(platformDependendPath, "Results"));
+        }
+        
+        var path = Path.Combine(platformDependendPath, "Results",filename);
+
         if (!File.Exists(path))
         {
             using (StreamWriter sw = File.CreateText(path))
@@ -272,6 +267,5 @@ public class ResultManager : MonoBehaviour
                 sw.WriteLine(result.ToString());
             }
         }
-        
     }
 }

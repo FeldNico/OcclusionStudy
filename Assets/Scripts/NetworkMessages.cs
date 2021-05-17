@@ -15,11 +15,11 @@ public class NetworkMessages : MonoBehaviour
         public bool IsOcclusionEnabled;
         public bool IsPhysical;
         public bool IsIntroduction;
-        public int Count;
-        public float TrialTime;
+        public int Iterations;
+        public int TrialCount;
         public float RestingTime;
         public string Codename;
-        public string Type;
+        public int Type;
     };
 
     public struct ConfirmCodename : NetworkMessage
@@ -46,6 +46,6 @@ public class NetworkMessages : MonoBehaviour
 
     public struct Questionnaire : NetworkMessage
     {
-        public string Type;
+        public int Type;
     }
 }

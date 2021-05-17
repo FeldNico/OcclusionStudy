@@ -1,11 +1,19 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.MixedReality.Toolkit.Utilities;
 using Mirror;
 using Newtonsoft.Json;
+using SharpAdbClient;
+using SharpAdbClient.DeviceCommands;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,14 +21,16 @@ using UnityEngine.UI;
 
 public class MasterManager : MonoBehaviour
 {
+    public string ADBPath = "C:\\Program Files\\Unity\\Hub\\Editor\\2019.4.22f1\\Editor\\Data\\PlaybackEngines\\AndroidPlayer\\SDK\\platform-tools";
+    
     public TMP_Text MainText;
     public Toggle IsHLConnectedToggle;
     public Toggle IsTabletConnectedToggle;
     public Toggle IsCodenameSetToggle;
     public TMP_InputField HololensIPInput;
     public TMP_InputField IPDInput;
-    public TMP_InputField CountInput;
-    public TMP_InputField TrialTimeInput;
+    public TMP_InputField IterationsCount;
+    public TMP_InputField TrialCountInput;
     public TMP_InputField RestingTimeInput;
     public GameObject SceneSelection;
 
@@ -32,6 +42,11 @@ public class MasterManager : MonoBehaviour
     private NetworkCredential _credential = new NetworkCredential(string.Format("auto-{0}", "hololens"), "hololens");
     private dynamic _package = null;
     private string _codename = "";
+
+    private Stream _inputStream;
+    private FileStream _fileStream;
+    private CancellationTokenSource _cancellationTokenSource;
+    private AdbServer _adbServer;
     
     private void Start()
     {
@@ -40,6 +55,9 @@ public class MasterManager : MonoBehaviour
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
             Convert.ToBase64String(Encoding.UTF8.GetBytes("hololens:hololens")));
 
+        _adbServer = new AdbServer();
+        _adbServer.StartServer(Path.Combine(ADBPath, "adb.exe"),true);
+        
         NetworkServer.RegisterHandler<NetworkMessages.ConfirmCodename>(codename =>
         {
             IsCodenameSetToggle.isOn = true;
@@ -53,12 +71,21 @@ public class MasterManager : MonoBehaviour
         
         NetworkServer.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>
         {
-            if (string.IsNullOrEmpty(questionnaire.Type))
+            if (questionnaire.Type == -1)
             {
                 MainText.text = "Questionnaire ausgefüllt.";
             }
             else
             {
+                if (_networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
+                {
+                    _inputStream.Flush();
+                    _fileStream.Flush();
+                    _inputStream.Close();
+                    _fileStream.Close();
+                    _cancellationTokenSource.Cancel();
+                }
+
                 MainText.text = "Questionnaire wird bearbeitet.";
                 _networkManager.GetTabletConnection().Send(questionnaire);
             }
@@ -152,65 +179,77 @@ public class MasterManager : MonoBehaviour
         _networkManager.GetTabletConnection().Send(new NetworkMessages.ConfirmCodename());
     }
 
-    public void StartTrial(bool IsIntroduction, string setup)
+    public async void StartTrial(bool IsIntroduction, int setup)
     {
+        if (_networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
+        {
+            _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
+
+#if UNITY_EDITOR
+            _fileStream = File.Create(Path.Combine(Application.dataPath,"..",_codename + "_" + setup + ".mp4"));
+#else
+        _fileStream = File.Create(Path.Combine(Application.persistentDataPath,_codename + "_" + setup + ".mp4"));
+#endif
+
+            _cancellationTokenSource = new CancellationTokenSource();
+        
+            _fileStream.Position = 0;
+            _inputStream.CopyToAsync(_fileStream,81920,_cancellationTokenSource.Token);
+        }
+        
         var msg = new NetworkMessages.StartTrial()
         {
-            Count = Convert.ToInt32(CountInput.text),
+            Iterations = Convert.ToInt32(IterationsCount.text),
             IsIntroduction = IsIntroduction,
-            IsPhysical = setup == "A" || setup == "B",
-            IsOcclusionEnabled = setup == "A" || setup == "C",
+            IsPhysical = setup == 1 || setup == 2,
+            IsOcclusionEnabled = setup == 1|| setup == 3,
             RestingTime = Convert.ToSingle(RestingTimeInput.text),
-            TrialTime = Convert.ToSingle(TrialTimeInput.text),
+            TrialCount = Convert.ToInt32(TrialCountInput.text),
             Codename = _codename,
             Type = setup
         };
         _networkManager.GetHololensConnection().Send(msg);
-        _networkManager.GetTabletConnection().Send(new NetworkMessages.Questionnaire
-        {
-            Type = setup
-        });
-        MainText.text = "";
+        MainText.text = "Trial startet: "+setup;
     }
     
     public void IntroductionOccGrab()
     {
-        StartTrial(true,"A");
+        StartTrial(true,1);
     }
 
     public void StartOccGrab()
     {
-        StartTrial(false,"A");
+        StartTrial(false,1);
     }
 
     public void IntroductionNoOccGrab()
     {
-        StartTrial(true,"B");
+        StartTrial(true,2);
     }
 
     public void StartNoOccGrab()
     {
-        StartTrial(false,"B");
+        StartTrial(false,2);
     }
 
     public void IntroductionOccTouch()
     {
-        StartTrial(true,"C");
+        StartTrial(true,3);
     }
 
     public void StartOccTouch()
     {
-        StartTrial(false,"C");
+        StartTrial(false,3);
     }
 
     public void IntroductionNoOccTouch()
     {
-        StartTrial(true,"D");
+        StartTrial(true,4);
     }
 
     public void StartNoOccTouch()
     {
-        StartTrial(false,"D");
+        StartTrial(false,4);
     }
 
     public void CloseScene()
@@ -219,6 +258,50 @@ public class MasterManager : MonoBehaviour
         MainText.text = "";
     }
 
+    public void StartingQuestionnaire()
+    {
+        _networkManager.GetTabletConnection().Send(new NetworkMessages.Questionnaire()
+        {
+            Type = 0
+        });
+        MainText.text = "Starting Questionaire";
+    }
+
+    public void FinalQuestionnaire()
+    {
+        _networkManager.GetTabletConnection().Send(new NetworkMessages.Questionnaire()
+        {
+            Type = 5
+        });
+        MainText.text = "Final Questionaire";
+    }
+
+    public async void RestartTablet()
+    {
+        var client = new AdbClient();
+        var device = client.GetDevices().FirstOrDefault(data => data.Model == "SM_T720");
+        if (device == null)
+        {
+            Debug.LogError("Tablet not found");
+            return;
+        }
+
+        await client.ExecuteRemoteCommandAsync("am force-stop com.DefaultCompany.OcclusionStudy", device,null,CancellationToken.None);
+        await client.ExecuteRemoteCommandAsync("monkey -p com.DefaultCompany.OcclusionStudy -c android.intent.category.LAUNCHER 1", device,null,CancellationToken.None);
+    }
+
+    public async void KillTablet()
+    {
+        var client = new AdbClient();
+        var device = client.GetDevices().FirstOrDefault(data => data.Model == "SM_T720");
+        if (device == null)
+        {
+            Debug.LogError("Tablet not found");
+            return;
+        }
+        await client.ExecuteRemoteCommandAsync("am force-stop com.DefaultCompany.OcclusionStudy", device,null,CancellationToken.None);
+    }
+    
     private bool _wasHLConnected = false;
     private bool _wasTabletConnected = false;
     private bool _wasReadyToStartTrial = false;

@@ -7,8 +7,12 @@ using Mirror;
 using TMPro;
 using UnityEngine;
 
-public class HololensManager : MonoBehaviour, IMixedRealityGestureHandler<Vector3>
+public class HololensManager : MonoBehaviour
 {
+
+    public AudioClip HoverSound;
+    public AudioClip SelectSound;
+    
     public TMP_Text MainText;
     public GameObject InteractionOrbPrefab;
     public GameObject InteractionOrbAnchor;
@@ -17,17 +21,21 @@ public class HololensManager : MonoBehaviour, IMixedRealityGestureHandler<Vector
     public GameObject TargetPrefab;
     public GameObject TargetAnchor;
 
-    public string Type;
-    
+    public int Type;
+
     public void Start()
     {
 
+        PointerUtils.SetHandRayPointerBehavior(PointerBehavior.AlwaysOff);
+        PointerUtils.SetGazePointerBehavior(PointerBehavior.AlwaysOff);
+        PointerUtils.SetMotionControllerRayPointerBehavior(PointerBehavior.AlwaysOff);
+        
         FindObjectOfType<CustomNetworkManager>().OnConneting += () =>
         {
             NetworkClient.RegisterHandler<NetworkMessages.StartTrial>(trial =>
             {
-                StartTrial(trial.IsIntroduction, trial.IsOcclusionEnabled, trial.IsPhysical, trial.Count,
-                    trial.TrialTime, trial.RestingTime);
+                StartTrial(trial.IsIntroduction, trial.IsOcclusionEnabled, trial.IsPhysical, trial.Iterations,
+                    trial.TrialCount, trial.RestingTime);
                 FindObjectOfType<ResultManager>().Codename = trial.Codename;
                 Type = trial.Type;
             });
@@ -65,7 +73,7 @@ public class HololensManager : MonoBehaviour, IMixedRealityGestureHandler<Vector
         };
     }
 
-    public void StartTrial(bool isIntroduction, bool isOcclusion, bool isPhysical, int count, float trialTime, float restingTime)
+    public void StartTrial(bool isIntroduction, bool isOcclusion, bool isPhysical, int iterations, int trialCount, float restingTime)
     {
         for (int i = 0; i < InteractionOrbAnchor.transform.childCount; i++)
         {
@@ -106,47 +114,7 @@ public class HololensManager : MonoBehaviour, IMixedRealityGestureHandler<Vector
             yield return new WaitForEndOfFrame();
             orb.Initialize(isOcclusion,isPhysical);
             yield return new WaitForEndOfFrame();
-            FindObjectOfType<ResultManager>().Initialize(isIntroduction,count,trialTime,restingTime);
+            FindObjectOfType<ResultManager>().Initialize(isIntroduction,iterations,trialCount,restingTime);
         }
-    }
-
-    public void OnGestureStarted(InputEventData eventData)
-    {
-        MainText.text = "Started "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
-    }
-
-    public void OnGestureUpdated(InputEventData eventData)
-    {
-        MainText.text = "Updated "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
-    }
-
-    public void OnGestureCompleted(InputEventData eventData)
-    {
-        MainText.text = "Completed "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
-    }
-
-    public void OnGestureCanceled(InputEventData eventData)
-    {
-        MainText.text = "Canceled "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
-    }
-
-    private void OnEnable()
-    {
-        CoreServices.InputSystem.RegisterHandler<IMixedRealityGestureHandler<Vector3>>(this);
-    }
-
-    private void OnDisable()
-    {
-        CoreServices.InputSystem.UnregisterHandler<IMixedRealityGestureHandler<Vector3>>(this);
-    }
-
-    public void OnGestureUpdated(InputEventData<Vector3> eventData)
-    {
-        MainText.text = "Updated "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
-    }
-
-    public void OnGestureCompleted(InputEventData<Vector3> eventData)
-    {
-        MainText.text = "Completed "+ Time.time + " " + eventData.MixedRealityInputAction.Description;
     }
 }

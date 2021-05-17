@@ -19,6 +19,13 @@ public class CustomNetworkManager : NetworkManager
     // Start is called before the first frame update
     void Start()
     {
+        
+#if UNITY_EDITOR
+ Debug.unityLogger.logEnabled = true;
+#else
+        Debug.unityLogger.logEnabled = false;
+#endif
+        
         if (DeviceType == NetworkMessages.NetworkDeviceType.Hololens ||
             DeviceType == NetworkMessages.NetworkDeviceType.Tablet)
         {

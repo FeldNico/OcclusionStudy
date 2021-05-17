@@ -6,9 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/HL.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/Master.unity
+    guid: 638a79ccb30330e4c90d1e209097b70b
   m_configObjects:
-    Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: 8d5551e31fae17441b10bce6dd580937, type: 2}
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 710b1e0737eeb634aa828e19830b3112, type: 2}
-    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: d3dd463d731629f42b095aa755eedc50, type: 2}
+    Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: 8d5551e31fae17441b10bce6dd580937,
+      type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 710b1e0737eeb634aa828e19830b3112,
+      type: 2}
+    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: d3dd463d731629f42b095aa755eedc50,
+      type: 2}
