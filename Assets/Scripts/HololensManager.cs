@@ -6,10 +6,16 @@ using Microsoft.MixedReality.Toolkit.Input;
 using Mirror;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class HololensManager : MonoBehaviour
 {
 
+    public VideoClip Video1;
+    public VideoClip Video2;
+    public VideoClip Video3;
+    public VideoClip Video4;
+    
     public AudioClip HoverSound;
     public AudioClip SelectSound;
     
@@ -30,10 +36,13 @@ public class HololensManager : MonoBehaviour
         PointerUtils.SetGazePointerBehavior(PointerBehavior.AlwaysOff);
         PointerUtils.SetMotionControllerRayPointerBehavior(PointerBehavior.AlwaysOff);
         
+        
+        
         FindObjectOfType<CustomNetworkManager>().OnConneting += () =>
         {
             NetworkClient.RegisterHandler<NetworkMessages.StartTrial>(trial =>
             {
+                
                 StartTrial(trial.IsIntroduction, trial.IsOcclusionEnabled, trial.IsPhysical, trial.Iterations,
                     trial.TrialCount, trial.RestingTime);
                 FindObjectOfType<ResultManager>().Codename = trial.Codename;
@@ -69,12 +78,38 @@ public class HololensManager : MonoBehaviour
                 {
                     DestroyImmediate(TargetAnchor.transform.GetChild(i).gameObject);
                 }
+                FindObjectOfType<VideoPlayer>().gameObject.SetActive(false);
             });
         };
     }
 
     public void StartTrial(bool isIntroduction, bool isOcclusion, bool isPhysical, int iterations, int trialCount, float restingTime)
     {
+
+        var videoPlayer = FindObjectOfType<VideoPlayer>();
+        
+        if (isIntroduction)
+        {
+            videoPlayer.GetComponent<Renderer>().enabled = true;
+            
+            if (isPhysical)
+            {
+                videoPlayer.clip = isOcclusion ? Video1 : Video2;
+            }
+            else
+            {
+                videoPlayer.clip = isOcclusion ? Video3 : Video4;
+            }
+            
+            videoPlayer.Stop();
+            videoPlayer.Play();
+        }
+        else
+        {
+            videoPlayer.GetComponent<Renderer>().enabled = false;
+            videoPlayer.Stop();
+        }
+        
         for (int i = 0; i < InteractionOrbAnchor.transform.childCount; i++)
         {
             DestroyImmediate(InteractionOrbAnchor.transform.GetChild(i).gameObject);

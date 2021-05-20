@@ -171,10 +171,14 @@ public class InteractionOrb : MonoBehaviour
                 start += Time.deltaTime;
             }
             _isCurrentlyManipulated = false;
-            MenuRoot.transform.parent = transform;
-            MenuRoot.transform.localPosition = Vector3.zero;
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
+            MenuRoot.transform.parent = transform;
+            foreach (var child in MenuRoot.GetComponentsInChildren<Transform>())
+            {
+                child.transform.localPosition = Vector3.zero;
+                child.transform.localRotation = Quaternion.identity;
+            }
             if (_rigidbody)
             {
                 _rigidbody.velocity = Vector3.zero;

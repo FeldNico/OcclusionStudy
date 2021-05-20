@@ -19,9 +19,16 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
 
     public void OnTouchStarted(HandTrackingInputEventData eventData)
     {
+       
+    }
+
+    public void OnTouchCompleted(HandTrackingInputEventData eventData)
+    {
         if (_item)
         {
             _item.Select();
+            
+            /*
             var hierachy = _item.transform.GetComponentsInParent<Transform>().ToList();
             hierachy.AddRange(_item.transform.GetComponentsInChildren<Transform>());
             foreach (var child in _orb.MenuRoot.GetComponentsInChildren<Transform>())
@@ -30,18 +37,14 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
                 {
                     child.GetComponent<RadialMenuItem>()?.Hide(true);
                 }
-            }
+            }*/
+            
         }
         else
         {
             _orb.MenuRoot.StartHover();
             _orb.OnGrabStart?.Invoke();
         }
-    }
-
-    public void OnTouchCompleted(HandTrackingInputEventData eventData)
-    {
-        
     }
 
     public void OnTouchUpdated(HandTrackingInputEventData eventData)

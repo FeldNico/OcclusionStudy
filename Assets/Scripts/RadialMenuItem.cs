@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UI;
@@ -91,6 +92,18 @@ public class RadialMenuItem : MonoBehaviour
             return;
         }
 
+        /*
+        var hierachy = transform.GetComponentsInParent<Transform>().ToList();
+        hierachy.AddRange(this.transform.GetComponentsInChildren<Transform>());
+        foreach (var child in _orb.MenuRoot.GetComponentsInChildren<Transform>())
+        {
+            if (!hierachy.Contains(child))
+            {
+                child.GetComponent<RadialMenuItem>()?.Hide(true);
+            }
+        }
+        */
+        
         StartCoroutine(Animate());
 
         IEnumerator Animate()
@@ -98,8 +111,9 @@ public class RadialMenuItem : MonoBehaviour
             foreach (var child in Children)
             {
                 child._renderer.enabled = true;
+                child._collider.enabled = false;
             }
-
+            
             var start = 0f;
             while (start < AnimationTime)
             {

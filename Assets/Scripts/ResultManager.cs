@@ -32,6 +32,7 @@ public class ResultManager : MonoBehaviour
     public UnityAction OnStart;
     public Coroutine _restingCoroutine;
     public string Codename = "";
+    public bool IsIntroduction = false;
     
     private Target _target;
     private PreviewItem _previewItem;
@@ -41,7 +42,6 @@ public class ResultManager : MonoBehaviour
     
     
     private Result _currentResult = null;
-    private bool _isIntroduction = false;
     private int _maxIterations = 0;
     private int _iterations = 0;
     private int _trialCount = 0;
@@ -58,7 +58,7 @@ public class ResultManager : MonoBehaviour
 
         _orb.OnGrabStart += OnGrabStart;
         _orb.OnGrabEnd += OnGrabEnd;
-        _isIntroduction = isIntroduction;
+        IsIntroduction = isIntroduction;
         _maxIterations = iterations;
         _iterations = 0;
         _maxTrialCount = trialCount;
@@ -140,7 +140,7 @@ public class ResultManager : MonoBehaviour
                                    _target.ShapeType.MeshGameObjectName == _previewItem.ShapeType.MeshGameObjectName &&
                                    _target.TextureType.MaterialGameObjectName == _previewItem.TextureType.MaterialGameObjectName;
 
-        if (!_isIntroduction)
+        if (!IsIntroduction)
         {
             PrintResult(_currentResult);
         }
@@ -154,7 +154,7 @@ public class ResultManager : MonoBehaviour
         {
             _trialCount = 0;
             _iterations++;
-            if (_iterations < _maxIterations || _isIntroduction)
+            if (_iterations < _maxIterations || IsIntroduction)
             {
                 _restingCoroutine = StartCoroutine(RestingTime());
                 IEnumerator RestingTime()

@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,15 +7,14 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.MixedReality.Toolkit.Utilities;
 using Mirror;
 using Newtonsoft.Json;
 using SharpAdbClient;
-using SharpAdbClient.DeviceCommands;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class MasterManager : MonoBehaviour
 {
@@ -50,6 +47,7 @@ public class MasterManager : MonoBehaviour
     
     private void Start()
     {
+
         _networkManager = FindObjectOfType<CustomNetworkManager>();
         _http = new HttpClient(new HttpClientHandler {Credentials = _credential});
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
@@ -67,6 +65,14 @@ public class MasterManager : MonoBehaviour
         NetworkServer.RegisterHandler<NetworkMessages.Reset>(reset =>
         {
             MainText.text = "Versuch beendet.";
+            if (_inputStream != null && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
+            {
+                _inputStream.Flush();
+                _fileStream.Flush();
+                _inputStream.Close();
+                _fileStream.Close();
+                _cancellationTokenSource.Cancel();
+            }
         });
         
         NetworkServer.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>
@@ -77,7 +83,7 @@ public class MasterManager : MonoBehaviour
             }
             else
             {
-                if (_networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
+                if (_inputStream != null && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
                 {
                     _inputStream.Flush();
                     _fileStream.Flush();
@@ -181,7 +187,7 @@ public class MasterManager : MonoBehaviour
 
     public async void StartTrial(bool IsIntroduction, int setup)
     {
-        if (_networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
+        if (!IsIntroduction && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
         {
             _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
 
@@ -255,6 +261,14 @@ public class MasterManager : MonoBehaviour
     public void CloseScene()
     {
         _networkManager.GetHololensConnection().Send(new NetworkMessages.CloseScene());
+        if (_inputStream != null && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
+        {
+            _inputStream.Flush();
+            _fileStream.Flush();
+            _inputStream.Close();
+            _fileStream.Close();
+            _cancellationTokenSource.Cancel();
+        }
         MainText.text = "";
     }
 

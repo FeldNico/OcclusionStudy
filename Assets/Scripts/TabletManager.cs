@@ -1,13 +1,7 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Mirror;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
@@ -18,7 +12,9 @@ public class TabletManager : MonoBehaviour
     public TMP_InputField InputField;
     public TMP_Text Text;
     private string _codename;
+    #if UNITY_ANDROID
     private WebViewObject _web;
+    #endif
 
     public void SubmitCodename()
     {
@@ -48,6 +44,7 @@ public class TabletManager : MonoBehaviour
         InputField.gameObject.SetActive(false);
         Text.text = "Warten...";
 
+        #if UNITY_ANDROID
         _web = new GameObject("WebViewObject").AddComponent<WebViewObject>();
         _web.Init(
             cb: (msg) =>
@@ -87,8 +84,6 @@ public class TabletManager : MonoBehaviour
             wkContentMode: 0);
         
         _web.SetMargins(0, 0, 0, 0);
-        
-        #if UNITY_ANDROID
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
         #endif
         
@@ -103,8 +98,10 @@ public class TabletManager : MonoBehaviour
             NetworkClient.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>
             {
                 Text.text = "Warten...";
+                #if UNITY_ANDROID
                 _web.SetVisibility(true);
                 _web.LoadURL("https://www.unipark.de/uc/occlusion/?a="+questionnaire.Type+"&b="+_codename);
+                #endif
             });
         };
     }
