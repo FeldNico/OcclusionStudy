@@ -18,6 +18,7 @@ public class InteractionOrb : MonoBehaviour
     public RadialMenuItem CurrentSelected;
     [HideInInspector]
     public RadialMenuItem MenuRoot;
+    public bool IsCurrentlyManipulated { private set; get; } = false;
     
     private ObjectManipulator _manipulator;
     private TouchHandler _touchHandler;
@@ -27,7 +28,7 @@ public class InteractionOrb : MonoBehaviour
     private Rigidbody _rigidbody;
 
     private Color _standardColor;
-    private bool _isCurrentlyManipulated = false;
+    
 
     public void Initialize(bool IsOcclusionEnabled, bool IsPhysical)
     {
@@ -142,7 +143,7 @@ public class InteractionOrb : MonoBehaviour
 
     public void OnManipulationStart(ManipulationEventData eventData)
     {
-        _isCurrentlyManipulated = true;
+        IsCurrentlyManipulated = true;
         MenuRoot.transform.parent = null;
         MenuRoot.StartHover();
 
@@ -170,7 +171,7 @@ public class InteractionOrb : MonoBehaviour
                 transform.position = pos;
                 start += Time.deltaTime;
             }
-            _isCurrentlyManipulated = false;
+            IsCurrentlyManipulated = false;
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
             MenuRoot.transform.parent = transform;
@@ -202,7 +203,7 @@ public class InteractionOrb : MonoBehaviour
             return;
         }
 
-        if (_isCurrentlyManipulated)
+        if (IsCurrentlyManipulated)
         {
             GetComponent<Renderer>().material.color = Color.green;
             GetComponent<AudioSource>().PlayOneShot(FindObjectOfType<HololensManager>().HoverSound);
@@ -228,7 +229,7 @@ public class InteractionOrb : MonoBehaviour
             CurrentSelected = null;
         }
 
-        if (_isCurrentlyManipulated)
+        if (IsCurrentlyManipulated)
         {
             GetComponent<Renderer>().material.color = Color.blue;
         }

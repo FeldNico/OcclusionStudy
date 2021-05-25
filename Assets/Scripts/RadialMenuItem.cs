@@ -28,12 +28,12 @@ public class RadialMenuItem : MonoBehaviour
     private NearInteractionTouchable _touchable;
     private Camera _camera;
     private InteractionOrb _orb;
-    private Target _target;
+    private Cloud _cloud;
 
     void Start()
     {
         _orb = FindObjectOfType<InteractionOrb>();
-        _target = FindObjectOfType<Target>();
+        _cloud = FindObjectOfType<Cloud>();
         _camera = Camera.main;
         
         _renderer = GetComponent<Renderer>();

@@ -113,7 +113,7 @@ public class MasterManager : MonoBehaviour
         };
     }
 
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_EDITOR
     private async Task<dynamic> GetPackage()
     {
         
@@ -143,7 +143,7 @@ public class MasterManager : MonoBehaviour
     
     public async void StartHololensApp()
     {
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_EDITOR
         var package = await GetPackage();
 
         await KillHololensApp();
@@ -163,7 +163,7 @@ public class MasterManager : MonoBehaviour
     
     public async Task KillHololensApp()
     {
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_EDITOR
         var package = await GetPackage();
         
         Debug.Log("Send Delete");
@@ -189,6 +189,15 @@ public class MasterManager : MonoBehaviour
     {
         if (!IsIntroduction && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
         {
+            if (_inputStream != null)
+            {
+                _inputStream.Flush();
+                _fileStream.Flush();
+                _inputStream.Close();
+                _fileStream.Close();
+                _cancellationTokenSource.Cancel();
+            }
+            
             _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
 
 #if UNITY_EDITOR

@@ -115,4 +115,27 @@ public class CustomNetworkManager : NetworkManager
 
         return null;
     }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        
+        if (DeviceType == NetworkMessages.NetworkDeviceType.Hololens ||
+            DeviceType == NetworkMessages.NetworkDeviceType.Tablet)
+        {
+            NetworkClient.connection.Disconnect();
+            NetworkClient.Shutdown();
+        }
+
+        if (DeviceType == NetworkMessages.NetworkDeviceType.Master)
+        {
+            foreach (var pair in NetworkServer.connections)
+            {
+                pair.Value.Disconnect();
+            }
+            NetworkServer.DisconnectAllExternalConnections();
+            NetworkServer.Shutdown();
+        }
+        Debug.Log("Cleaning");
+    }
 }

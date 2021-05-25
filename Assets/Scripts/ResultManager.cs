@@ -34,8 +34,8 @@ public class ResultManager : MonoBehaviour
     public string Codename = "";
     public bool IsIntroduction = false;
     
-    private Target _target;
-    private PreviewItem _previewItem;
+    private Cloud _cloud;
+    private TargetItem _targetItem;
     private InteractionOrb _orb;
 
     private HololensManager _hololensManager;
@@ -52,8 +52,8 @@ public class ResultManager : MonoBehaviour
     {
         _hololensManager.MainText.text = "";
         
-        _target = FindObjectOfType<Target>();
-        _previewItem = FindObjectOfType<PreviewItem>();
+        _cloud = FindObjectOfType<Cloud>();
+        _targetItem = FindObjectOfType<TargetItem>();
         _orb = FindObjectOfType<InteractionOrb>();
 
         _orb.OnGrabStart += OnGrabStart;
@@ -136,9 +136,9 @@ public class ResultManager : MonoBehaviour
     {
         _currentResult.TrialTime = Time.time - _currentResult.TrialTime;
         _currentResult.TrialTimeShort = Time.time - _currentResult.TrialTimeShort;
-        _currentResult.IsCorrect = _target.ColourType.Color == _previewItem.ColourType.Color &&
-                                   _target.ShapeType.MeshGameObjectName == _previewItem.ShapeType.MeshGameObjectName &&
-                                   _target.TextureType.MaterialGameObjectName == _previewItem.TextureType.MaterialGameObjectName;
+        _currentResult.IsCorrect = _cloud.ColourType.Color == _targetItem.ColourType.Color &&
+                                   _cloud.ShapeType.MeshGameObjectName == _targetItem.ShapeType.MeshGameObjectName &&
+                                   _cloud.TextureType.MaterialGameObjectName == _targetItem.TextureType.MaterialGameObjectName;
 
         if (!IsIntroduction)
         {
@@ -190,8 +190,8 @@ public class ResultManager : MonoBehaviour
                     Type = _hololensManager.Type
                 });
                 Destroy(_orb.gameObject);
-                Destroy(_target.gameObject);
-                Destroy(_previewItem.gameObject);
+                Destroy(_cloud.gameObject);
+                Destroy(_targetItem.gameObject);
             }
         }
     }
@@ -202,7 +202,7 @@ public class ResultManager : MonoBehaviour
         {
             case RadialMenuItemMetadata.ColourType t:
             {
-                if (_target.ColourType.Color != ((RadialMenuItemMetadata.ColourType) type).Color)
+                if (_cloud.ColourType.Color != ((RadialMenuItemMetadata.ColourType) type).Color)
                 {
                     _currentResult.Errors++;
                 }
@@ -210,7 +210,7 @@ public class ResultManager : MonoBehaviour
             }
             case RadialMenuItemMetadata.ShapeType t:
             {
-                if (_target.ShapeType.MeshGameObjectName != ((RadialMenuItemMetadata.ShapeType) type).MeshGameObjectName)
+                if (_cloud.ShapeType.MeshGameObjectName != ((RadialMenuItemMetadata.ShapeType) type).MeshGameObjectName)
                 {
                     _currentResult.Errors++;
                 }
@@ -218,7 +218,7 @@ public class ResultManager : MonoBehaviour
             }
             case RadialMenuItemMetadata.TextureType t:
             {
-                if (_target.TextureType.MaterialGameObjectName != ((RadialMenuItemMetadata.TextureType) type).MaterialGameObjectName)
+                if (_cloud.TextureType.MaterialGameObjectName != ((RadialMenuItemMetadata.TextureType) type).MaterialGameObjectName)
                 {
                     _currentResult.Errors++;
                 }
