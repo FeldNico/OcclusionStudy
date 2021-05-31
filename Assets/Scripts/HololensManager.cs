@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
+using Microsoft.MixedReality.Toolkit.Utilities;
 using Mirror;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.U2D;
 using UnityEngine.Video;
 
@@ -30,8 +32,12 @@ public class HololensManager : MonoBehaviour
 
     public int Type;
 
+    public UnityAction TriggerMenu;
+    
     private Camera _camera;
     private InteractionOrb _orb;
+    private bool _canShowMenu = false;
+    
 
     public void Start()
     {
@@ -41,6 +47,12 @@ public class HololensManager : MonoBehaviour
         PointerUtils.SetGazePointerBehavior(PointerBehavior.AlwaysOff);
         PointerUtils.SetMotionControllerRayPointerBehavior(PointerBehavior.AlwaysOff);
 
+        FindObjectOfType<ResultManager>().OnStart += () =>
+        {
+            TriggerMenu?.Invoke();
+            _canShowMenu = true;
+        };
+        
         FindObjectOfType<CustomNetworkManager>().OnConneting += () =>
         {
             NetworkClient.RegisterHandler<NetworkMessages.StartTrial>(trial =>
@@ -81,14 +93,14 @@ public class HololensManager : MonoBehaviour
                 {
                     DestroyImmediate(CloudAnchor.transform.GetChild(i).gameObject);
                 }
-                FindObjectOfType<VideoPlayer>().gameObject.SetActive(false);
+
+                FindObjectOfType<VideoPlayer>().GetComponent<Renderer>().enabled = false;
             });
         };
     }
 
     public void StartTrial(bool isIntroduction, bool isOcclusion, bool isPhysical, int iterations, int trialCount, float restingTime)
     {
-
         var videoPlayer = FindObjectOfType<VideoPlayer>();
         
         if (isIntroduction)
@@ -173,12 +185,11 @@ public class HololensManager : MonoBehaviour
         {
             var angle = Vector2.SignedAngle(targetToOrb, targetToCamera);
             
-            while (Math.Abs(angle) > 0.5f && _orb != null && !_orb.IsCurrentlyManipulated)
+            while (Math.Abs(angle) > 0.5f && _orb != null && !_orb.IsCurrentlyManipulated && _orb.MenuRoot != null && !_orb.MenuRoot.IsExpanded)
             {
                 InteractionOrbAnchor.transform.RotateAround(CloudAnchor.transform.position,Vector3.up, -angle * 0.03f);
                 TargetAnchor.transform.RotateAround(CloudAnchor.transform.position,Vector3.up, -angle * 0.03f);
                 
-                InteractionOrbAnchor.transform.LookAt(_camera.transform);
                 targetToOrbVec3 = InteractionOrbAnchor.transform.position - CloudAnchor.transform.position;
                 targetToCameraVec3 = _camera.transform.position - CloudAnchor.transform.position;
                 targetToOrb = new Vector2(targetToOrbVec3.x, targetToOrbVec3.z);
@@ -189,5 +200,23 @@ public class HololensManager : MonoBehaviour
 
             _moveOrbAnchor = null;
         }
+
+
+        var vecAnchorToCam = _camera.transform.position - InteractionOrbAnchor.transform.position;
+        vecAnchorToCam.y = InteractionOrbAnchor.transform.position.y;
+        
+        var rot = Quaternion.FromToRotation(InteractionOrbAnchor.transform.forward,-vecAnchorToCam);
+
+        InteractionOrbAnchor.transform.rotation *= rot;
+        
+        if (_canShowMenu && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Left,out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Right,out MixedRealityPose rightTipPose))
+        {
+            if (Vector3.Distance(leftTipPose.Position, rightTipPose.Position) < 0.02f )
+            {
+                _canShowMenu = false;
+                TriggerMenu?.Invoke();
+            }
+        }
     }
+    
 }

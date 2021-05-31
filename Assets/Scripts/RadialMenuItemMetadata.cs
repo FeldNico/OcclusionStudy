@@ -37,7 +37,7 @@ public class RadialMenuItemMetadata
 
         var list = new List<(Color, string, string, int, Color, string, string)>();
 
-        var t = (allColours[0], allTextures[0], allTextures[0], 0, allColours[1], allTextures[1], allShapes[1]);
+        var t = (allColours[0], allTextures[0], allTextures[0], 5, allColours[1], allTextures[1], allShapes[1]);
 
         list.Add(t);
 
@@ -75,7 +75,7 @@ public class RadialMenuItemMetadata
 
     public static List<(Color, string, string,int,Color,string,string)> AttributesList = new List<(Color, string, string,int,Color,string,string)>()
     {
-        (new Color(1f, 0.6470588f, 0f), "TextureStar", "TextureStar", 0, new Color(0f, 1f, 0f), "TextureRaster",
+        (new Color(1f, 0.6470588f, 0f), "TextureStar", "TextureStar", 5, new Color(0f, 1f, 0f), "TextureRaster",
             "ShapeCube"),
         (new Color(0.5f, 0f, 0.5f), "TextureCircle", "ShapeCylinder", 19, new Color(1f, 1f, 1f), "TextureLine",
             "ShapeCapsule"),

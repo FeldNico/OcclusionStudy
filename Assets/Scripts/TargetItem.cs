@@ -20,10 +20,17 @@ public class TargetItem : MonoBehaviour
         _sphereDummy.name = "SphereDummy";
         _sphereDummy.GetComponent<Renderer>().enabled = false;
         _sphereDummy.GetComponent<Collider>().enabled = false;
-        
+
         FindObjectOfType<ResultManager>().OnStart += OnStart;
-        
+
         RadialMenuItem.OnSelect += HandleType;
+
+        FindObjectOfType<HololensManager>().TriggerMenu += TriggerMenu;
+    }
+
+    private void TriggerMenu()
+    {
+        GetComponent<Renderer>().enabled = !GetComponent<Renderer>().enabled;
     }
 
     private void OnStart()
@@ -31,13 +38,14 @@ public class TargetItem : MonoBehaviour
         ColourType = new RadialMenuItemMetadata.ColourType() {Color = Color.cyan};
         ShapeType = new RadialMenuItemMetadata.ShapeType() {MeshGameObjectName = "SphereDummy"};
         TextureType = new RadialMenuItemMetadata.TextureType() {MaterialGameObjectName = "InteractionOrb(Clone)"};
-        
+
         HandleType(ColourType);
         HandleType(ShapeType);
         HandleType(TextureType);
     }
 
     private int _index = 0;
+
     private void HandleType(RadialMenuItemMetadata.IItemType type)
     {
         switch (type)
@@ -69,13 +77,13 @@ public class TargetItem : MonoBehaviour
 
     private void OnDestroy()
     {
-        
         RadialMenuItem.OnSelect -= HandleType;
-        
+        FindObjectOfType<ResultManager>().OnStart -= OnStart;
+        FindObjectOfType<HololensManager>().TriggerMenu -= TriggerMenu;
+
         if (_sphereDummy != null)
         {
             DestroyImmediate(_sphereDummy);
         }
-        
     }
 }

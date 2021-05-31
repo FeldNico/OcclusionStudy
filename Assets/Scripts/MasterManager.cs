@@ -67,11 +67,37 @@ public class MasterManager : MonoBehaviour
             MainText.text = "Versuch beendet.";
             if (_inputStream != null && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
             {
-                _inputStream.Flush();
-                _fileStream.Flush();
-                _inputStream.Close();
-                _fileStream.Close();
-                _cancellationTokenSource.Cancel();
+                if (_inputStream != null)
+                {
+                    try
+                    {
+                        _inputStream.Flush();
+                        _fileStream.Flush();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
+                        _inputStream.Close();
+                        _fileStream.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
+                        _cancellationTokenSource.Cancel();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
             }
         });
         
@@ -85,11 +111,37 @@ public class MasterManager : MonoBehaviour
             {
                 if (_inputStream != null && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
                 {
-                    _inputStream.Flush();
-                    _fileStream.Flush();
-                    _inputStream.Close();
-                    _fileStream.Close();
-                    _cancellationTokenSource.Cancel();
+                    if (_inputStream != null)
+                    {
+                        try
+                        {
+                            _inputStream.Flush();
+                            _fileStream.Flush();
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+
+                        try
+                        {
+                            _inputStream.Close();
+                            _fileStream.Close();
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+
+                        try
+                        {
+                            _cancellationTokenSource.Cancel();
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+                    }
                 }
 
                 MainText.text = "Questionnaire wird bearbeitet.";
@@ -191,19 +243,43 @@ public class MasterManager : MonoBehaviour
         {
             if (_inputStream != null)
             {
-                _inputStream.Flush();
-                _fileStream.Flush();
-                _inputStream.Close();
-                _fileStream.Close();
-                _cancellationTokenSource.Cancel();
+                try
+                {
+                    _inputStream.Flush();
+                    _fileStream.Flush();
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    _inputStream.Close();
+                    _fileStream.Close();
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    _cancellationTokenSource.Cancel();
+                }
+                catch
+                {
+                    // ignored
+                }
             }
+
             
             _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
 
 #if UNITY_EDITOR
             _fileStream = File.Create(Path.Combine(Application.dataPath,"..",_codename + "_" + setup + ".mp4"));
 #else
-        _fileStream = File.Create(Path.Combine(Application.persistentDataPath,_codename + "_" + setup + ".mp4"));
+            _fileStream = File.Create(Path.Combine(Application.persistentDataPath,_codename + "_" + setup + ".mp4"));
 #endif
 
             _cancellationTokenSource = new CancellationTokenSource();
@@ -272,11 +348,37 @@ public class MasterManager : MonoBehaviour
         _networkManager.GetHololensConnection().Send(new NetworkMessages.CloseScene());
         if (_inputStream != null && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
         {
-            _inputStream.Flush();
-            _fileStream.Flush();
-            _inputStream.Close();
-            _fileStream.Close();
-            _cancellationTokenSource.Cancel();
+            if (_inputStream != null)
+            {
+                try
+                {
+                    _inputStream.Flush();
+                    _fileStream.Flush();
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    _inputStream.Close();
+                    _fileStream.Close();
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    _cancellationTokenSource.Cancel();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
         }
         MainText.text = "";
     }

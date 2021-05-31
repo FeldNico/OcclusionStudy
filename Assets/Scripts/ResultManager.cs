@@ -14,18 +14,21 @@ public class ResultManager : MonoBehaviour
     
     public class Result
     {
-        public string Name;
-        public float TrialTime;
-        public float TrialTimeShort;
-        public int Grabs;
-        public int Releases;
-        public int Errors;
-        public bool IsCorrect;
+        public string Codename;
+        public float SearchTaskTime;
+        public float SelectTaskTime;
+        public float SelectTaskTimeShort;
+        public int Grabs = -77;
+        public int Releases = -77;
+        public int Hovers;
+        public int AttributeSelections;
+        public int WrongAttributeErrors;
+        public bool CorrectConfirm;
 
         public override string ToString()
         {
-            return Name + ",\"" + TrialTime + "\",\"" + TrialTimeShort + "\"," + Grabs + "," + Releases + "," + Errors + "," +
-                   IsCorrect;
+            return Codename + ",\"" + SearchTaskTime + "\",\"" + SelectTaskTime + "\",\"" + SelectTaskTimeShort + "\"," + Grabs + "," + Releases + ","+ Hovers + ","+ AttributeSelections + "," + WrongAttributeErrors + "," +
+                   CorrectConfirm;
         }
     }
     
@@ -56,8 +59,9 @@ public class ResultManager : MonoBehaviour
         _targetItem = FindObjectOfType<TargetItem>();
         _orb = FindObjectOfType<InteractionOrb>();
 
-        _orb.OnGrabStart += OnGrabStart;
-        _orb.OnGrabEnd += OnGrabEnd;
+        _orb.OnInteraction += OnInteraction;
+        _orb.OnGrab += OnGrab;
+        _orb.OnRelease += OnRelease;
         IsIntroduction = isIntroduction;
         _maxIterations = iterations;
         _iterations = 0;
@@ -75,68 +79,86 @@ public class ResultManager : MonoBehaviour
         
         RadialMenuItem.OnConfirm += OnConfirm;
         RadialMenuItem.OnSelect += OnSelect;
+        RadialMenuItem.OnHover += OnHover;
 
+        _hololensManager.TriggerMenu += () =>
+        {
+            if (_currentResult == null)
+                return;
+            
+            if (_currentResult.SelectTaskTime == 0)
+            {
+                _currentResult.SearchTaskTime = Time.time - _currentResult.SearchTaskTime;
+                _currentResult.SelectTaskTime = Time.time;
+                
+                PrintLog("Triggered Menu");
+            }
+            PrintLog("Triggered Menu invalid");
+        };
+        
         OnStart += () =>
         {
             _currentResult = new Result()
             {
-                Name = Codename,
-                Errors = 0,
-                Grabs = 0,
-                Releases = 0,
-                TrialTime = Time.time,
-                TrialTimeShort = 0,
+                Codename = Codename,
+                Hovers = 0,
+                AttributeSelections = 0,
+                WrongAttributeErrors = 0,
+                SearchTaskTime = Time.time,
+                SelectTaskTime = 0,
+                SelectTaskTimeShort = 0,
             };
 
-            #if UNITY_EDITOR
-            StartCoroutine(Wait());
-            IEnumerator Wait()
+            if (_orb.IsPhysicalMenu)
             {
-                yield return new WaitForSeconds(1f);
-                if (_orb.IsPhysicalMenu)
-                {
-                    _orb.OnManipulationStart(null);
-                }
-                else
-                {
-                    _orb.GetComponent<TouchHandler>().OnTouchStarted(null);
-                }
-
-                yield return new WaitForSeconds(2f);
-                if (_orb.IsPhysicalMenu)
-                {
-                    _orb.transform.position = GameObject.Find("Confirm").transform.position;
-                    yield return new WaitForSeconds(2f);
-                    _orb.OnManipulationEnd(null);
-                }
-                else
-                {
-                    GameObject.Find("Confirm").GetComponent<TouchHandler>().OnTouchStarted(null);
-                }
+                _currentResult.Grabs = 0;
+                _currentResult.Releases = 0;
             }
-            #endif
+            
+            PrintLog("Start Trial: "+ (_orb.IsPhysicalMenu ? "grab" : "touch") + " "+ (_orb.HasOcclusion ? "occluded" : "not occluded"));
+            
         };
     }
 
-    private void OnGrabEnd()
+    private void OnHover(RadialMenuItem item)
+    {
+        _currentResult.Hovers++;
+        PrintLog("Hover: "+item.gameObject.name);
+    }
+
+    private void OnInteraction()
+    {
+        if (_currentResult.SelectTaskTimeShort == 0)
+        {
+            _currentResult.SelectTaskTimeShort = Time.time;
+            PrintLog("First Interaction");
+        }
+        else
+        {
+            PrintLog("Interaction");
+        }
+        
+    }
+
+    public void OnGrab()
+    {
+        _currentResult.Grabs++;
+        PrintLog("Grab");
+    }
+    
+    private void OnRelease()
     {
         _currentResult.Releases++;
+        PrintLog("Release");
     }
-
-    private void OnGrabStart()
-    {
-        if (_currentResult.TrialTimeShort == 0)
-        {
-            _currentResult.TrialTimeShort = Time.time;
-        }
-        _currentResult.Grabs++;
-    }
-
+    
     private void OnConfirm()
     {
-        _currentResult.TrialTime = Time.time - _currentResult.TrialTime;
-        _currentResult.TrialTimeShort = Time.time - _currentResult.TrialTimeShort;
-        _currentResult.IsCorrect = _cloud.ColourType.Color == _targetItem.ColourType.Color &&
+        PrintLog("Confirm");
+        
+        _currentResult.SelectTaskTime = Time.time - _currentResult.SelectTaskTime;
+        _currentResult.SelectTaskTimeShort = Time.time - _currentResult.SelectTaskTimeShort;
+        _currentResult.CorrectConfirm = _cloud.ColourType.Color == _targetItem.ColourType.Color &&
                                    _cloud.ShapeType.MeshGameObjectName == _targetItem.ShapeType.MeshGameObjectName &&
                                    _cloud.TextureType.MaterialGameObjectName == _targetItem.TextureType.MaterialGameObjectName;
 
@@ -198,29 +220,34 @@ public class ResultManager : MonoBehaviour
 
     private void OnSelect(RadialMenuItemMetadata.IItemType type)
     {
+        _currentResult.AttributeSelections++;
+        
         switch (type)
         {
             case RadialMenuItemMetadata.ColourType t:
             {
+                PrintLog("Selected Type: Colour " +((RadialMenuItemMetadata.ColourType) type).Color);
                 if (_cloud.ColourType.Color != ((RadialMenuItemMetadata.ColourType) type).Color)
                 {
-                    _currentResult.Errors++;
+                    _currentResult.WrongAttributeErrors++;
                 }
                 break;
             }
             case RadialMenuItemMetadata.ShapeType t:
             {
+                PrintLog("Selected Type: Shape " +((RadialMenuItemMetadata.ShapeType) type).MeshGameObjectName);
                 if (_cloud.ShapeType.MeshGameObjectName != ((RadialMenuItemMetadata.ShapeType) type).MeshGameObjectName)
                 {
-                    _currentResult.Errors++;
+                    _currentResult.WrongAttributeErrors++;
                 }
                 break;
             }
             case RadialMenuItemMetadata.TextureType t:
             {
+                PrintLog("Selected Type: Texture " +((RadialMenuItemMetadata.TextureType) type).MaterialGameObjectName);
                 if (_cloud.TextureType.MaterialGameObjectName != ((RadialMenuItemMetadata.TextureType) type).MaterialGameObjectName)
                 {
-                    _currentResult.Errors++;
+                    _currentResult.WrongAttributeErrors++;
                 }
                 break;
             }
@@ -229,6 +256,11 @@ public class ResultManager : MonoBehaviour
 
     private void PrintResult(Result result)
     {
+        if (IsIntroduction)
+        {
+            return;
+        }
+        
         var scenario = "";
         if (_orb.IsPhysicalMenu)
         {
@@ -239,7 +271,7 @@ public class ResultManager : MonoBehaviour
             scenario = _orb.HasOcclusion ? "C" : "D";
         }
         
-        var filename = result.Name + "_" + scenario + "_" + DateTime.Now.Day +
+        var filename = result.Codename + "_" + scenario + "_" + DateTime.Now.Day +
                        "_" + DateTime.Now.Month + "_" + DateTime.Now.Year+".csv";
 #if UNITY_EDITOR
         var platformDependendPath = Application.dataPath;
@@ -265,6 +297,54 @@ public class ResultManager : MonoBehaviour
             using (StreamWriter sw = File.AppendText(path))
             {
                 sw.WriteLine(result.ToString());
+            }
+        }
+    }
+
+    private void PrintLog(string entry)
+    {
+        
+        if (IsIntroduction)
+            return;
+        
+        var scenario = "";
+        if (_orb.IsPhysicalMenu)
+        {
+            scenario = _orb.HasOcclusion ? "A" : "B";
+        }
+        else
+        {
+            scenario = _orb.HasOcclusion ? "C" : "D";
+        }
+        
+        var filename = _currentResult.Codename + "_" + scenario + "_" + DateTime.Now.Day +
+                       "_" + DateTime.Now.Month + "_" + DateTime.Now.Year+".log";
+        
+#if UNITY_EDITOR
+        var platformDependendPath = Application.dataPath;
+#else
+        var platformDependendPath = Application.persistentDataPath;
+#endif
+        
+        if (!Directory.Exists(Path.Combine(platformDependendPath, "Logs")))
+        {
+            Directory.CreateDirectory(Path.Combine(platformDependendPath, "Logs"));
+        }
+        
+        var path = Path.Combine(platformDependendPath, "Logs",filename);
+
+        if (!File.Exists(path))
+        {
+            using (StreamWriter sw = File.CreateText(path))
+            {
+                sw.WriteLine(DateTime.Now+": "+entry);
+            }
+        }
+        else
+        {
+            using (StreamWriter sw = File.AppendText(path))
+            {
+                sw.WriteLine(DateTime.Now+": "+entry);
             }
         }
     }

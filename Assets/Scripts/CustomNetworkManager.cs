@@ -20,10 +20,10 @@ public class CustomNetworkManager : NetworkManager
     void Start()
     {
         
-#if UNITY_EDITOR
- Debug.unityLogger.logEnabled = true;
-#else
+#if UNITY_WSA && !UNITY_EDITOR
         Debug.unityLogger.logEnabled = false;
+#else
+        Debug.unityLogger.logEnabled = true;
 #endif
         
         if (DeviceType == NetworkMessages.NetworkDeviceType.Hololens ||
@@ -123,7 +123,10 @@ public class CustomNetworkManager : NetworkManager
         if (DeviceType == NetworkMessages.NetworkDeviceType.Hololens ||
             DeviceType == NetworkMessages.NetworkDeviceType.Tablet)
         {
-            NetworkClient.connection.Disconnect();
+            if (NetworkClient.connection != null)
+            {
+                NetworkClient.connection.Disconnect();
+            }
             NetworkClient.Shutdown();
         }
 

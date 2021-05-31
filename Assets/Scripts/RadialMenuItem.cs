@@ -12,6 +12,7 @@ using UnityEngine.Events;
 public class RadialMenuItem : MonoBehaviour
 {
     public static UnityAction<RadialMenuItemMetadata.IItemType> OnSelect;
+    public static UnityAction<RadialMenuItem> OnHover;
     public static UnityAction OnConfirm;
 
     public float Radius = 0.035f;
@@ -92,17 +93,7 @@ public class RadialMenuItem : MonoBehaviour
             return;
         }
 
-        /*
-        var hierachy = transform.GetComponentsInParent<Transform>().ToList();
-        hierachy.AddRange(this.transform.GetComponentsInChildren<Transform>());
-        foreach (var child in _orb.MenuRoot.GetComponentsInChildren<Transform>())
-        {
-            if (!hierachy.Contains(child))
-            {
-                child.GetComponent<RadialMenuItem>()?.Hide(true);
-            }
-        }
-        */
+        OnHover?.Invoke(this);
         
         StartCoroutine(Animate());
 
@@ -122,7 +113,7 @@ public class RadialMenuItem : MonoBehaviour
                 {
                     var x = (float) (Radius * Math.Cos(2 * Children.IndexOf(child) * Math.PI / Children.Count));
                     var y = (float) (Radius * Math.Sin(2 * Children.IndexOf(child) * Math.PI / Children.Count));
-                    var pos = transform.position + _camera.transform.up * x + _camera.transform.right * y;
+                    var pos = transform.position + transform.up * x + transform.right * y;
                     pos = Vector3.Lerp(transform.position, pos, start / AnimationTime);
                     child.transform.position = pos;
                 }
@@ -132,6 +123,9 @@ public class RadialMenuItem : MonoBehaviour
 
             foreach (var child in Children)
             {
+                var x = (float) (Radius * Math.Cos(2 * Children.IndexOf(child) * Math.PI / Children.Count));
+                var y = (float) (Radius * Math.Sin(2 * Children.IndexOf(child) * Math.PI / Children.Count));
+                child.transform.position = transform.position + transform.up * x + transform.right * y;
                 child._collider.enabled = true;
             }
 
@@ -190,9 +184,15 @@ public class RadialMenuItem : MonoBehaviour
                 start += Time.deltaTime;
             }
 
+            foreach (var child in Children)
+            {
+                child.transform.localPosition = Vector3.zero;
+            }
+            
             if (hideSelf)
             {
-                _renderer.enabled = false;
+                if (_renderer != null)
+                    _renderer.enabled = false;
                 transform.localPosition = Vector3.zero;
             }
         }

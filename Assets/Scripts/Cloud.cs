@@ -11,7 +11,7 @@ public class Cloud : MonoBehaviour
     public RadialMenuItemMetadata.ShapeType ShapeType;
     public RadialMenuItemMetadata.TextureType TextureType;
 
-    public int ChildCount = 300;
+    public int ChildCount = 30;
     
     public void Start()
     {
@@ -37,14 +37,14 @@ public class Cloud : MonoBehaviour
                 var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 child.transform.parent = transform;
                 child.transform.localPosition =
-                    new Vector3(x,y,z) * 0.5f;
+                    new Vector3(x,y,z) * 0.51f;
                 child.transform.localRotation = Quaternion.identity;
-                child.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                child.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f) * (1f/transform.localScale.x);
             }
         }
     }
 
-    private int _index = 0;
+    private static int _index = 0;
     public void RandomizeTypes()
     {
         if (FindObjectOfType<ResultManager>().IsIntroduction)
@@ -93,5 +93,9 @@ public class Cloud : MonoBehaviour
         targetChild.GetComponent<Renderer>().material.color = tuple.Item5;
         targetChild.GetComponent<MeshFilter>().mesh = GameObject.Find(tuple.Item7).GetComponent<MeshFilter>().mesh;
     }
-    
+
+    private void OnDestroy()
+    {
+        FindObjectOfType<ResultManager>().OnStart -= RandomizeTypes;
+    }
 }

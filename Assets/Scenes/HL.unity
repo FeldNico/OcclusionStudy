@@ -435,7 +435,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 639674541}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.04, y: 0, z: 2}
+  m_LocalPosition: {x: -0.04, y: -0.15, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 625828759}
@@ -453,9 +453,7 @@ GameObject:
   - component: {fileID: 661286118}
   - component: {fileID: 661286119}
   - component: {fileID: 661286117}
-  - component: {fileID: 661286121}
   - component: {fileID: 661286116}
-  - component: {fileID: 661286120}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -486,19 +484,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 661286114}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
+  m_Script: {fileID: 11500000, guid: c7424c1070fad4ba2a7a96b02fbeb4bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Port: 7777
+  port: 7777
   NoDelay: 1
-  Interval: 10
-  FastResend: 2
-  CongestionWindow: 0
-  SendWindowSize: 4096
-  ReceiveWindowSize: 4096
-  debugLog: 0
-  statisticsGUI: 0
-  statisticsLog: 0
+  SendTimeout: 5000
+  ReceiveTimeout: 30000
+  serverMaxMessageSize: 16384
+  serverMaxReceivesPerTick: 10000
+  serverSendQueueLimitPerConnection: 10000
+  serverReceiveQueueLimitPerConnection: 10000
+  clientMaxMessageSize: 16384
+  clientMaxReceivesPerTick: 1000
+  clientSendQueueLimit: 10000
+  clientReceiveQueueLimit: 10000
 --- !u!114 &661286117
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -520,7 +520,7 @@ MonoBehaviour:
   serverBatchInterval: 0
   offlineScene: 
   onlineScene: 
-  transport: {fileID: 661286121}
+  transport: {fileID: 661286116}
   networkAddress: 192.168.178.71
   maxConnections: 100
   disconnectInactiveConnections: 0
@@ -543,10 +543,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43cf51d3439ff5c4aa454da875e48d2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Video1: {fileID: 32900000, guid: f49b379929b2fa044850534118fa7265, type: 3}
-  Video2: {fileID: 32900000, guid: 9ace75838172ef64cac7c964859bba32, type: 3}
-  Video3: {fileID: 32900000, guid: ed6eaef5d59153343899a1bbb5f1dab2, type: 3}
-  Video4: {fileID: 32900000, guid: ae67368c0ee9925418c29263e71b7eca, type: 3}
+  Video1: {fileID: 32900000, guid: 4acb33816c7bb854d8177364cd3949ab, type: 3}
+  Video2: {fileID: 32900000, guid: 7753121f9353b5746adefa69191a2978, type: 3}
+  Video3: {fileID: 32900000, guid: b43ce8d310510b947a4a11326e4d68d4, type: 3}
+  Video4: {fileID: 32900000, guid: c6c7542e09efa6f44b0af3df9bbce608, type: 3}
   HoverSound: {fileID: 8300000, guid: 5ed9970e17bfee943a6dff056dc3a9d0, type: 3}
   SelectSound: {fileID: 8300000, guid: 70e02441ad3cd8f488092b6a4933e446, type: 3}
   MainText: {fileID: 1455918419}
@@ -574,48 +574,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Codename: 
   IsIntroduction: 0
---- !u!114 &661286120
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 661286114}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0110f245bfcfc7d459681f7bd9ebc590, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  port: 7778
-  maxMessageSize: 16384
-  handshakeMaxSize: 3000
-  noDelay: 1
-  sendTimeout: 5000
-  receiveTimeout: 20000
-  serverMaxMessagesPerTick: 10000
-  clientMaxMessagesPerTick: 1000
-  batchSend: 1
-  waitBeforeSend: 0
-  clientUseWss: 0
-  sslEnabled: 0
-  sslCertJson: ./cert.json
-  sslProtocols: 3072
-  _logLevels: 0
---- !u!114 &661286121
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 661286114}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 929e3234c7db540b899f00183fc2b1fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transports:
-  - {fileID: 661286116}
-  - {fileID: 661286120}
 --- !u!1 &879717586
 GameObject:
   m_ObjectHideFlags: 0

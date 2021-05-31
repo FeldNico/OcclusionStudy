@@ -8,8 +8,9 @@ using UnityEngine.Events;
 
 public class InteractionOrb : MonoBehaviour
 {
-    public UnityAction OnGrabStart;
-    public UnityAction OnGrabEnd;
+    public UnityAction OnGrab;
+    public UnityAction OnRelease;
+    public UnityAction OnInteraction;
 
     public bool IsPhysicalMenu;
     public bool HasOcclusion;
@@ -53,6 +54,8 @@ public class InteractionOrb : MonoBehaviour
         MenuRoot.transform.localScale = Vector3.one;
         MenuRoot.Radius = 0.15f;
 
+        FindObjectOfType<HololensManager>().TriggerMenu += TriggerMenu;
+
         _collider = GetComponent<Collider>();
         if (_collider)
         {
@@ -87,6 +90,17 @@ public class InteractionOrb : MonoBehaviour
             
             _manipulator.OnManipulationStarted.AddListener(OnManipulationStart);
             _manipulator.OnManipulationEnded.AddListener(OnManipulationEnd);
+            
+            StartCoroutine(Wait());
+            IEnumerator Wait()
+            {
+                yield return null;
+                DestroyImmediate(MenuRoot.GetComponent<Collider>());
+                DestroyImmediate(MenuRoot.GetComponent<Rigidbody>());
+                DestroyImmediate(MenuRoot.GetComponent<ObjectManipulator>());
+                DestroyImmediate(MenuRoot.GetComponent<NearInteractionGrabbable>());
+            }
+            
         }
         else
         {
@@ -101,10 +115,16 @@ public class InteractionOrb : MonoBehaviour
             {
                 _touchable = gameObject.AddComponent<NearInteractionTouchable>();
             }
-            
-        }
 
-        _collider.isTrigger = true;
+            StartCoroutine(Wait());
+            IEnumerator Wait()
+            {
+                yield return null;
+                DestroyImmediate(MenuRoot.GetComponent<Collider>());
+                DestroyImmediate(MenuRoot.GetComponent<TouchHandler>());
+                DestroyImmediate(MenuRoot.GetComponent<NearInteractionTouchable>());
+            }
+        }
 
         _standardColor = GetComponent<Renderer>().material.color;
 
@@ -112,8 +132,28 @@ public class InteractionOrb : MonoBehaviour
         {
             MenuRoot.AddChildren(CreateMenuItem(itemMetadata));
         }
+
+        _collider.isTrigger = true;
     }
 
+    private void TriggerMenu()
+    {
+        if (MenuRoot != null && MenuRoot.GetComponent<Collider>() != null)
+        {
+            if (MenuRoot.IsExpanded)
+            {
+                MenuRoot.Hide(true);
+            }
+            else
+            {
+                MenuRoot.GetComponent<Collider>().enabled = true;
+            }
+        }
+        
+        GetComponent<Renderer>().enabled =  !GetComponent<Renderer>().enabled;
+        GetComponent<Collider>().enabled =  !GetComponent<Collider>().enabled;
+    }
+    
     private RadialMenuItem CreateMenuItem(RadialMenuItemMetadata metadata)
     {
         var go = Instantiate(Resources.Load<GameObject>(metadata.Prefab));
@@ -149,7 +189,8 @@ public class InteractionOrb : MonoBehaviour
 
         GetComponent<Renderer>().material.color = Color.blue;
         
-        OnGrabStart?.Invoke();
+        OnGrab?.Invoke();
+        OnInteraction?.Invoke();
     }
 
     public void OnManipulationEnd(ManipulationEventData eventData)
@@ -158,7 +199,7 @@ public class InteractionOrb : MonoBehaviour
 
         GetComponent<Renderer>().material.color = _standardColor;
 
-        OnGrabEnd?.Invoke();
+        OnRelease?.Invoke();
         
         StartCoroutine(Animate());
         IEnumerator Animate()
@@ -175,11 +216,6 @@ public class InteractionOrb : MonoBehaviour
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
             MenuRoot.transform.parent = transform;
-            foreach (var child in MenuRoot.GetComponentsInChildren<Transform>())
-            {
-                child.transform.localPosition = Vector3.zero;
-                child.transform.localRotation = Quaternion.identity;
-            }
             if (_rigidbody)
             {
                 _rigidbody.velocity = Vector3.zero;
@@ -246,7 +282,9 @@ public class InteractionOrb : MonoBehaviour
             DestroyImmediate(MenuRoot.gameObject);
         }
 
-        OnGrabEnd = null;
-        OnGrabStart = null;
+
+        FindObjectOfType<HololensManager>().TriggerMenu -= TriggerMenu;
+        OnRelease = null;
+        OnGrab = null;
     }
 }
