@@ -114,6 +114,9 @@ public class ResultManager : MonoBehaviour
                 _currentResult.Grabs = 0;
                 _currentResult.Releases = 0;
             }
+
+            var angle = -Vector3.SignedAngle(_cloud.transform.forward, Camera.main.transform.position - _cloud.transform.position,_cloud.transform.up);
+            _cloud.transform.localRotation *= Quaternion.AngleAxis(angle,transform.up);
             
             PrintLog("Start Trial: "+ (_orb.IsPhysicalMenu ? "grab" : "touch") + " "+ (_orb.HasOcclusion ? "occluded" : "not occluded"));
             
