@@ -115,9 +115,10 @@ public class ResultManager : MonoBehaviour
                 _currentResult.Releases = 0;
             }
 
-            var angle = -Vector3.SignedAngle(_cloud.transform.forward, Camera.main.transform.position - _cloud.transform.position,_cloud.transform.up);
-            _cloud.transform.localRotation *= Quaternion.AngleAxis(angle,transform.up);
-            
+            var camPos = Camera.main.transform.position;
+            camPos.y = _cloud.transform.position.y;
+            _cloud.transform.LookAt(camPos);
+
             PrintLog("Start Trial: "+ (_orb.IsPhysicalMenu ? "grab" : "touch") + " "+ (_orb.HasOcclusion ? "occluded" : "not occluded"));
             
         };
@@ -340,14 +341,14 @@ public class ResultManager : MonoBehaviour
         {
             using (StreamWriter sw = File.CreateText(path))
             {
-                sw.WriteLine(DateTime.Now+": "+entry);
+                sw.WriteLine(DateTime.Now.ToString("yyyyMMddHHmmssffff")+": "+entry);
             }
         }
         else
         {
             using (StreamWriter sw = File.AppendText(path))
             {
-                sw.WriteLine(DateTime.Now+": "+entry);
+                sw.WriteLine(DateTime.Now.ToString("yyyyMMddHHmmssffff")+": "+entry);
             }
         }
     }
