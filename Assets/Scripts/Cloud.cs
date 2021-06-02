@@ -34,7 +34,7 @@ public class Cloud : MonoBehaviour
                 var x = 0.5f * Mathf.Cos(2f * i * Mathf.PI / ChildCount);
                 var z = 0.5f * Mathf.Sin(2f * i * Mathf.PI / ChildCount);
                 var pos = Vector3.forward * x + Vector3.right * z;
-                pos.y = (i % 10 * 2f) / 10 - 1f;
+                pos.y = (i % 10 * 2f) / 10 - 0.9f;
                 /*
                 var y = 1f -  i / (ChildCount - 1f) * 2f;
                 var radius = Mathf.Sqrt(1 - y * y);
