@@ -71,15 +71,17 @@ public class InteractionOrb : MonoBehaviour
             }
 
             _rigidbody.useGravity = false;
+
+            var rotConstaint = gameObject.AddComponent<RotationAxisConstraint>();
+            rotConstaint.ConstraintOnRotation = AxisFlags.XAxis | AxisFlags.YAxis | AxisFlags.ZAxis;
             
             _manipulator = GetComponent<ObjectManipulator>();
             if (_manipulator == null)
             {
                 _manipulator = gameObject.AddComponent<ObjectManipulator>();
             }
+            
 
-            _manipulator.ManipulationType = ManipulationHandFlags.OneHanded;
-        
             _collider = gameObject.AddComponent<SphereCollider>();
             
             _nearInteraction = GetComponent<NearInteractionGrabbable>();
@@ -214,7 +216,7 @@ public class InteractionOrb : MonoBehaviour
             }
             IsCurrentlyManipulated = false;
             transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
+            //transform.localRotation = Quaternion.identity;
             MenuRoot.transform.parent = transform;
             if (_rigidbody)
             {

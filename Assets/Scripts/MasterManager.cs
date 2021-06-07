@@ -14,6 +14,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using UnityEngine.Video;
 using Random = UnityEngine.Random;
 
 public class MasterManager : MonoBehaviour
@@ -281,7 +282,7 @@ public class MasterManager : MonoBehaviour
 #else
             _fileStream = File.Create(Path.Combine(Application.persistentDataPath,_codename + "_" + setup + ".mp4"));
 #endif
-
+            
             _cancellationTokenSource = new CancellationTokenSource();
         
             _fileStream.Position = 0;

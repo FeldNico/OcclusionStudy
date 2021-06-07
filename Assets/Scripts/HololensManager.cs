@@ -172,6 +172,8 @@ public class HololensManager : MonoBehaviour
     public void Update()
     {
 
+        /*
+        
         var targetToOrbVec3 = InteractionOrbAnchor.transform.position - CloudAnchor.transform.position;
         var targetToCameraVec3 = _camera.transform.position - CloudAnchor.transform.position;
         var targetToOrb = new Vector2(targetToOrbVec3.x, targetToOrbVec3.z);
@@ -200,23 +202,29 @@ public class HololensManager : MonoBehaviour
 
             _moveOrbAnchor = null;
         }
-
-
+*/
+        
         var vecAnchorToCam = _camera.transform.position - InteractionOrbAnchor.transform.position;
         vecAnchorToCam.y = InteractionOrbAnchor.transform.position.y;
-        
-        var rot = Quaternion.FromToRotation(InteractionOrbAnchor.transform.forward,-vecAnchorToCam);
 
-        InteractionOrbAnchor.transform.rotation *= rot;
-        
+        InteractionOrbAnchor.transform.rotation *= Quaternion.FromToRotation(InteractionOrbAnchor.transform.forward,-vecAnchorToCam);
+
         if (_canShowMenu && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Left,out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Right,out MixedRealityPose rightTipPose))
         {
             if (Vector3.Distance(leftTipPose.Position, rightTipPose.Position) < 0.02f )
             {
                 _canShowMenu = false;
+                
+                var camToCloud = CloudAnchor.transform.position - _camera.transform.position;
+                camToCloud.y = 0;
+                camToCloud.Normalize();
+
+                InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.2f;
+                
                 TriggerMenu?.Invoke();
             }
         }
+        
     }
     
 }

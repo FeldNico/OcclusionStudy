@@ -61,7 +61,6 @@ public class RadialMenuItem : MonoBehaviour
         }
         else
         {
-
             _touchHandler = GetComponent<TouchHandler>();
             if (_touchHandler == null)
             {
@@ -72,11 +71,13 @@ public class RadialMenuItem : MonoBehaviour
             {
                 _touchable = gameObject.AddComponent<NearInteractionTouchable>();
             }
-            
-            if (_collider == null)
+
+            if (_collider != null)
             {
-                _collider = gameObject.AddComponent<BoxCollider>();
+                DestroyImmediate(_collider);
             }
+            
+            _collider = gameObject.AddComponent<BoxCollider>();
         }
 
         _collider.isTrigger = true;
