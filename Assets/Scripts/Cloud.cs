@@ -19,7 +19,7 @@ public class Cloud : MonoBehaviour
     public void Start()
     {
 
-        RadialMenuItemMetadata.GenerateRandomList(ChildCount);
+        //RadialMenuItemMetadata.GenerateRandomList(ChildCount);
         
         FindObjectOfType<ResultManager>().OnStart += RandomizeTypes;
 

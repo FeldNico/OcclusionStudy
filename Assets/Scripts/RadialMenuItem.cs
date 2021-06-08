@@ -45,6 +45,11 @@ public class RadialMenuItem : MonoBehaviour
         
         if (_orb.IsPhysicalMenu)
         {
+            if (_collider == null)
+            {
+                _collider = gameObject.AddComponent<SphereCollider>();
+            }
+            
             _rigidbody = GetComponent<Rigidbody>();
             if (_rigidbody == null)
             {
@@ -53,14 +58,16 @@ public class RadialMenuItem : MonoBehaviour
 
             _rigidbody.useGravity = false;
             
-            
-            if (_collider == null)
-            {
-                _collider = gameObject.AddComponent<SphereCollider>();
-            }
         }
         else
         {
+            if (_collider != null)
+            {
+                DestroyImmediate(_collider);
+            }
+            
+            _collider = gameObject.AddComponent<BoxCollider>();
+            
             _touchHandler = GetComponent<TouchHandler>();
             if (_touchHandler == null)
             {
@@ -71,13 +78,6 @@ public class RadialMenuItem : MonoBehaviour
             {
                 _touchable = gameObject.AddComponent<NearInteractionTouchable>();
             }
-
-            if (_collider != null)
-            {
-                DestroyImmediate(_collider);
-            }
-            
-            _collider = gameObject.AddComponent<BoxCollider>();
         }
 
         _collider.isTrigger = true;

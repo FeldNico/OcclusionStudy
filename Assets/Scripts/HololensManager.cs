@@ -62,6 +62,7 @@ public class HololensManager : MonoBehaviour
                     trial.TrialCount, trial.RestingTime);
                 FindObjectOfType<ResultManager>().Codename = trial.Codename;
                 Type = trial.Type;
+                MainText.text = "";
             });
             
             NetworkClient.RegisterHandler<NetworkMessages.ConfirmCodename>(codename =>
@@ -77,7 +78,7 @@ public class HololensManager : MonoBehaviour
                     StopCoroutine(coroutine);
                 }
 
-                MainText.text = "";
+                MainText.text = "Bitte warten Sie bis der Versuchsleiter den Versuch startet.";
 
                 for (int i = 0; i < InteractionOrbAnchor.transform.childCount; i++)
                 {
@@ -95,6 +96,14 @@ public class HololensManager : MonoBehaviour
                 }
 
                 FindObjectOfType<VideoPlayer>().GetComponent<Renderer>().enabled = false;
+            });
+            
+            NetworkClient.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>
+            {
+                if (questionnaire.Type == -1)
+                {
+                    MainText.text = "Bitte warten Sie bis der Versuchsleiter den Versuch startet.";
+                }
             });
         };
     }
@@ -219,7 +228,13 @@ public class HololensManager : MonoBehaviour
                 camToCloud.y = 0;
                 camToCloud.Normalize();
 
-                InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.2f;
+                InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.5f;
+                TargetAnchor.transform.position =
+                    InteractionOrbAnchor.transform.TransformPoint(new Vector3(0.15f, 0.1f, 0.9f));
+
+                var rot = Quaternion.FromToRotation(-InteractionOrbAnchor.transform.forward,_camera.transform.forward);
+                InteractionOrbAnchor.transform.rotation *= rot;
+                TargetAnchor.transform.rotation *= rot;
                 
                 TriggerMenu?.Invoke();
             }

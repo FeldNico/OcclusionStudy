@@ -171,6 +171,11 @@ public class ResultManager : MonoBehaviour
             PrintResult(_currentResult);
         }
 
+        NetworkClient.Send(new NetworkMessages.TrialInformation()
+        {
+            TrialCount = _trialCount
+        });
+        
         _trialCount++;
         if (_trialCount < _maxTrialCount)
         {

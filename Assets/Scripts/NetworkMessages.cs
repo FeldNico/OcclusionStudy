@@ -48,4 +48,9 @@ public class NetworkMessages : MonoBehaviour
     {
         public int Type;
     }
+
+    public struct TrialInformation : NetworkMessage
+    {
+        public int TrialCount;
+    }
 }
