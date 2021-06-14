@@ -189,7 +189,7 @@ public class MasterManager : MonoBehaviour
 
     public async void StartTrial(bool IsIntroduction, int setup)
     {
-        if (!IsIntroduction && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.109")
+        if (!IsIntroduction && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
         {
             StopStreams();
 
@@ -344,7 +344,7 @@ public class MasterManager : MonoBehaviour
 
     private void StopStreams()
     {
-        if (_inputSplitStream != null && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.109")
+        if (_inputSplitStream != null && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
         {
             if (_ffplayProcess != null)
             {

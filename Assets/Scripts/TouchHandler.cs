@@ -27,8 +27,17 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
             DestroyImmediate(_dummy);
             _fingerTipPosition = Vector3.zero;
         }
-        
-        
+
+        if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, Handedness.Left,
+            out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,
+            Handedness.Right, out MixedRealityPose rightTipPose))
+        {
+            if (Vector3.Distance(leftTipPose.Position, rightTipPose.Position) < 0.06f)
+            {
+                return;
+            }
+        }
+
         if (eventData != null && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, eventData.Handedness, out MixedRealityPose pose))
         {
             _dummy = new GameObject(name + "_dummy");
@@ -54,6 +63,8 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
 
         GetComponent<Renderer>().enabled = true;
 
+        _orb.GetComponent<AudioSource>().PlayOneShot(FindObjectOfType<HololensManager>().SelectSound);
+        
         if (_item != null)
         {
             _item.Select();

@@ -151,6 +151,11 @@ public class InteractionOrb : MonoBehaviour
                 MenuRoot.GetComponent<Collider>().enabled = true;
             }
         }
+
+        var v = Camera.main.transform.position;
+        v.y = MenuRoot.transform.position.y;
+        MenuRoot.transform.LookAt(v,Vector3.up);
+        MenuRoot.transform.localRotation *= Quaternion.AngleAxis(180f,Vector3.up);
         
         GetComponent<Renderer>().enabled =  !GetComponent<Renderer>().enabled;
         GetComponent<Collider>().enabled =  !GetComponent<Collider>().enabled;

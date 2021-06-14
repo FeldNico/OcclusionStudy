@@ -216,7 +216,7 @@ public class HololensManager : MonoBehaviour
         var vecAnchorToCam = _camera.transform.position - InteractionOrbAnchor.transform.position;
         vecAnchorToCam.y = InteractionOrbAnchor.transform.position.y;
 
-        InteractionOrbAnchor.transform.rotation *= Quaternion.FromToRotation(InteractionOrbAnchor.transform.forward,-vecAnchorToCam);
+        //InteractionOrbAnchor.transform.rotation *= Quaternion.FromToRotation(InteractionOrbAnchor.transform.forward,-vecAnchorToCam);
 
         if (_canShowMenu && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Left,out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Right,out MixedRealityPose rightTipPose))
         {
@@ -225,17 +225,13 @@ public class HololensManager : MonoBehaviour
                 _canShowMenu = false;
                 
                 var camToCloud = CloudAnchor.transform.position - _camera.transform.position;
-                camToCloud.y = 0;
+                camToCloud.y = -0.1f;
                 camToCloud.Normalize();
 
                 InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.5f;
                 TargetAnchor.transform.position =
-                    InteractionOrbAnchor.transform.TransformPoint(new Vector3(0.15f, 0.1f, 0.9f));
+                    InteractionOrbAnchor.transform.TransformPoint(new Vector3(0.15f, 0.1f, 0.3f));
 
-                var rot = Quaternion.FromToRotation(-InteractionOrbAnchor.transform.forward,_camera.transform.forward);
-                InteractionOrbAnchor.transform.rotation *= rot;
-                TargetAnchor.transform.rotation *= rot;
-                
                 TriggerMenu?.Invoke();
             }
         }
