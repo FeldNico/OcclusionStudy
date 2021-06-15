@@ -738,7 +738,7 @@ PlayerSettings:
   metroCertificatePassword: 
   metroCertificateSubject: DefaultCompany
   metroCertificateIssuer: DefaultCompany
-  metroCertificateNotAfter: 80f232390d80d801
+  metroCertificateNotAfter: 00880944de80d801
   metroApplicationDescription: Template_3D
   wsaImages: {}
   metroTileShortName: OcclusionStudy
