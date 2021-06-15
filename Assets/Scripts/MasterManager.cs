@@ -23,7 +23,7 @@ using Random = UnityEngine.Random;
 
 public class MasterManager : MonoBehaviour
 {
-    public string ADBPath = "C:\\Program Files\\Unity\\Hub\\Editor\\2019.4.22f1\\Editor\\Data\\PlaybackEngines\\AndroidPlayer\\SDK\\platform-tools";
+    public string ADBPath = "C:\\Program Files\\Unity\\Hub\\Editor\\2019.4.28f1\\Editor\\Data\\PlaybackEngines\\AndroidPlayer\\SDK\\platform-tools";
     
     public TMP_Text MainText;
     public Toggle IsHLConnectedToggle;
@@ -220,7 +220,7 @@ public class MasterManager : MonoBehaviour
 #if UNITY_EDITOR
                 FileName = Path.Combine(Application.dataPath, "..", "ffmpeg", "ffplay.exe"),
 #else
-                FileName = Path.Combine(".", "ffmpeg", "ffplay.exe"),
+                FileName = Path.Combine(Path.GetFullPath("."), "ffmpeg", "ffplay.exe"),
 #endif
                 
                 Arguments =

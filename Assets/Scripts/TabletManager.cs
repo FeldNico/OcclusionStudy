@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Mirror;
 using TMPro;
@@ -105,4 +106,5 @@ public class TabletManager : MonoBehaviour
             });
         };
     }
+    
 }
