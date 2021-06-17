@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Microsoft.MixedReality.Toolkit.Utilities;
 using Mirror;
 using TMPro;
 using UnityEngine;
@@ -12,6 +13,7 @@ public class TabletManager : MonoBehaviour
     public Button Button;
     public TMP_InputField InputField;
     public TMP_Text Text;
+    public Handedness _handedness;
     private string _codename;
     #if UNITY_ANDROID
     private WebViewObject _web;
@@ -51,6 +53,11 @@ public class TabletManager : MonoBehaviour
             cb: (msg) =>
             {
                 Debug.Log(string.Format("CallFromJS[{0}]", msg));
+                if (msg.StartsWith("hand:"))
+                {
+                    var handedness = msg.Split(':')[1];
+                    _handedness = handedness == "0" ? Handedness.Left : Handedness.Right;
+                }
             },
             err: (msg) => { Debug.Log(string.Format("CallOnError[{0}]", msg)); },
             
@@ -75,7 +82,8 @@ public class TabletManager : MonoBehaviour
                         _web.SetVisibility(false);
                         NetworkClient.Send(new NetworkMessages.Questionnaire()
                         {
-                            Type = -1
+                            Type = -1,
+                            Handedness = _handedness
                         });
                     }
                 }

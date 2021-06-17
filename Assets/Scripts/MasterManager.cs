@@ -189,7 +189,7 @@ public class MasterManager : MonoBehaviour
 
     public async void StartTrial(bool IsIntroduction, int setup)
     {
-        if (!IsIntroduction && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
+        if (_networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
         {
             StopStreams();
 
@@ -209,7 +209,7 @@ public class MasterManager : MonoBehaviour
                 _fileStream.Position = 0;
             }
 
-            if (RecordToggle.isOn)
+            if (RecordToggle.isOn && !IsIntroduction)
             {
                 _fileInputStream = _inputSplitStream.GetForwardReadOnlyStream();
                 _fileInputStream.CopyToAsync(_fileStream,81920,_cancellationTokenSource.Token);
@@ -346,11 +346,11 @@ public class MasterManager : MonoBehaviour
     {
         if (_inputSplitStream != null && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
         {
-            if (_ffplayProcess != null)
+            if (_ffplayProcess != null && !_ffplayProcess.HasExited)
             {
                 _ffplayProcess.Kill();
-                _ffplayProcess = null;
             }
+            _ffplayProcess = null;
             
             try
             {

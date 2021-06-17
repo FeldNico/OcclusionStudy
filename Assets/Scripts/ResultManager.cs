@@ -171,12 +171,13 @@ public class ResultManager : MonoBehaviour
             PrintResult(_currentResult);
         }
 
+        _trialCount++;
+        
         NetworkClient.Send(new NetworkMessages.TrialInformation()
         {
             TrialCount = _trialCount
         });
         
-        _trialCount++;
         if (_trialCount < _maxTrialCount)
         {
             OnStart?.Invoke();

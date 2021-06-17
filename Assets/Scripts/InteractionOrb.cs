@@ -74,11 +74,12 @@ public class InteractionOrb : MonoBehaviour
 
             var rotConstaint = gameObject.AddComponent<RotationAxisConstraint>();
             rotConstaint.ConstraintOnRotation = AxisFlags.XAxis | AxisFlags.YAxis | AxisFlags.ZAxis;
-            
+
             _manipulator = GetComponent<ObjectManipulator>();
             if (_manipulator == null)
             {
                 _manipulator = gameObject.AddComponent<ObjectManipulator>();
+                _manipulator.AllowFarManipulation = false;
             }
             
 
@@ -140,6 +141,8 @@ public class InteractionOrb : MonoBehaviour
 
     private void TriggerMenu()
     {
+        _colliderCount = 0;
+        
         if (MenuRoot != null && MenuRoot.GetComponent<Collider>() != null)
         {
             if (MenuRoot.IsExpanded)
@@ -202,6 +205,8 @@ public class InteractionOrb : MonoBehaviour
 
     public void OnManipulationEnd(ManipulationEventData eventData)
     {
+        _colliderCount = 0;
+        
         MenuRoot.Hide(false);
 
         GetComponent<Renderer>().material.color = _standardColor;
@@ -238,6 +243,7 @@ public class InteractionOrb : MonoBehaviour
         
     }
 
+    private int _colliderCount = 0;
     private void OnTriggerEnter(Collider other)
     {
         RadialMenuItem item = other.GetComponent<RadialMenuItem>();
@@ -248,11 +254,13 @@ public class InteractionOrb : MonoBehaviour
 
         if (IsCurrentlyManipulated)
         {
+            _colliderCount++;
             GetComponent<Renderer>().material.color = Color.green;
             GetComponent<AudioSource>().PlayOneShot(FindObjectOfType<HololensManager>().HoverSound);
         }
         else
         {
+            _colliderCount = 0;
             GetComponent<Renderer>().material.color = _standardColor;
         }
 
@@ -272,13 +280,17 @@ public class InteractionOrb : MonoBehaviour
             CurrentSelected = null;
         }
 
-        if (IsCurrentlyManipulated)
+        _colliderCount--;
+        if (_colliderCount <= 0)
         {
-            GetComponent<Renderer>().material.color = Color.blue;
-        }
-        else
-        {
-            GetComponent<Renderer>().material.color = _standardColor;
+            if (IsCurrentlyManipulated)
+            {
+                GetComponent<Renderer>().material.color = Color.blue;
+            }
+            else
+            {
+                GetComponent<Renderer>().material.color = _standardColor;
+            }
         }
     }
 

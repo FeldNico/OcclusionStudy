@@ -290,8 +290,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 461745416}
   m_LocalRotation: {x: 0, y: 0.70710677, z: -0.70710677, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.03, y: 0.03, z: 0.03}
+  m_LocalPosition: {x: -0.048, y: -0.007, z: 0.113}
+  m_LocalScale: {x: 0.0533, y: 0.03, z: 0.03}
   m_Children: []
   m_Father: {fileID: 1022271162}
   m_RootOrder: 0
@@ -521,7 +521,7 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   transport: {fileID: 661286116}
-  networkAddress: 136.199.52.20
+  networkAddress: 136.199.52.21
   maxConnections: 100
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
@@ -560,6 +560,7 @@ MonoBehaviour:
     type: 3}
   CloudAnchor: {fileID: 639674541}
   Type: 0
+  ForcedHandedness: 0
 --- !u!114 &661286119
 MonoBehaviour:
   m_ObjectHideFlags: 0

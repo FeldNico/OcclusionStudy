@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.MixedReality.Toolkit.Utilities;
 using Mirror;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class NetworkMessages : MonoBehaviour
 {
@@ -47,10 +49,16 @@ public class NetworkMessages : MonoBehaviour
     public struct Questionnaire : NetworkMessage
     {
         public int Type;
+        public Handedness Handedness;
     }
 
     public struct TrialInformation : NetworkMessage
     {
         public int TrialCount;
+    }
+
+    public struct SetHandedness : NetworkMessage
+    {
+        public Handedness Handedness;
     }
 }

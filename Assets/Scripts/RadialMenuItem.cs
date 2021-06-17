@@ -220,7 +220,7 @@ public class RadialMenuItem : MonoBehaviour
     {
         if (transform.parent != null && transform.parent != _orb.transform)
         {
-            if (_orb.IsPhysicalMenu && IsExpanded && Vector3.Distance(_orb.transform.position, transform.position) > Radius * 1.2f)
+            if (_orb.IsPhysicalMenu && IsExpanded && Vector3.Distance(_orb.transform.position, transform.position) > Radius * 2f)
             {
                 _orb.CurrentSelected = null;
                 Hide(false);

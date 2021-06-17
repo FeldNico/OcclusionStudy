@@ -33,6 +33,8 @@ public class HololensManager : MonoBehaviour
     public int Type;
 
     public UnityAction TriggerMenu;
+
+    public Handedness ForcedHandedness;
     
     private Camera _camera;
     private InteractionOrb _orb;
@@ -46,6 +48,8 @@ public class HololensManager : MonoBehaviour
         PointerUtils.SetHandRayPointerBehavior(PointerBehavior.AlwaysOff);
         PointerUtils.SetGazePointerBehavior(PointerBehavior.AlwaysOff);
         PointerUtils.SetMotionControllerRayPointerBehavior(PointerBehavior.AlwaysOff);
+
+        Application.targetFrameRate = 30;
 
         FindObjectOfType<ResultManager>().OnStart += () =>
         {
@@ -77,6 +81,8 @@ public class HololensManager : MonoBehaviour
                 {
                     StopCoroutine(coroutine);
                 }
+                
+                FindObjectOfType<VideoPlayer>().Stop();
 
                 MainText.text = "Bitte warten Sie bis der Versuchsleiter den Versuch startet.";
 
@@ -104,6 +110,8 @@ public class HololensManager : MonoBehaviour
                 {
                     MainText.text = "Bitte warten Sie bis der Versuchsleiter den Versuch startet.";
                 }
+
+                ForcedHandedness = questionnaire.Handedness;
             });
         };
     }
@@ -225,12 +233,20 @@ public class HololensManager : MonoBehaviour
                 _canShowMenu = false;
                 
                 var camToCloud = CloudAnchor.transform.position - _camera.transform.position;
-                camToCloud.y = -0.1f;
+                camToCloud.y = -0.2f;
                 camToCloud.Normalize();
 
                 InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.5f;
-                TargetAnchor.transform.position =
-                    InteractionOrbAnchor.transform.TransformPoint(new Vector3(0.15f, 0.1f, 0.3f));
+
+                var orbToCloud = CloudAnchor.transform.position - InteractionOrbAnchor.transform.position;
+                orbToCloud.y = 0f;
+                orbToCloud.Normalize();
+                
+                var orbToCloudRight = - Vector3.Cross(orbToCloud, Vector3.up).normalized;
+                TargetAnchor.transform.position = InteractionOrbAnchor.transform.position + orbToCloud * 0.15f +
+                                                  orbToCloudRight * 0.14f + Vector3.up * 0.08f;
+                
+                //TargetAnchor.transform.position = InteractionOrbAnchor.transform.TransformPoint(new Vector3(0.15f, 0.1f, 0.3f));
 
                 TriggerMenu?.Invoke();
             }
