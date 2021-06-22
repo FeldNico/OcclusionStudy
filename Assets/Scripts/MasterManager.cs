@@ -30,6 +30,7 @@ public class MasterManager : MonoBehaviour
     public Toggle IsTabletConnectedToggle;
     public Toggle IsCodenameSetToggle;
     public Toggle RecordToggle;
+    public Toggle RecordOnDevice;
     public TMP_InputField HololensIPInput;
     public TMP_InputField IPDInput;
     public TMP_InputField IterationsCount;
@@ -45,6 +46,7 @@ public class MasterManager : MonoBehaviour
     private NetworkCredential _credential = new NetworkCredential(string.Format("auto-{0}", "hololens"), "hololens");
     private dynamic _package = null;
     private string _codename = "";
+    private int _setup = -1;
 
     private Stream _inputStream;
     private ReadableSplitStream _inputSplitStream;
@@ -191,49 +193,68 @@ public class MasterManager : MonoBehaviour
     {
         if (_networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
         {
-            StopStreams();
-
-            _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
-            _inputSplitStream = new ReadableSplitStream(_inputStream);
-
-            _cancellationTokenSource = new CancellationTokenSource();
-            
-            if (RecordToggle.isOn)
+            if (RecordOnDevice.isOn && !IsIntroduction)
             {
-    #if UNITY_EDITOR
-                _fileStream = File.Create(Path.Combine(Application.dataPath,"..",_codename + "_" + setup + ".mp4"));
-    #else
-                _fileStream = File.Create(Path.Combine(Application.persistentDataPath,_codename + "_" + setup + ".mp4"));
-    #endif
+                StopStreams();
+                try
+                {
+                    _http.PostAsync(
+                        "http://" + HololensIPInput.text.Trim() +
+                        "/API/Holographic/MRC/Video/Control/Start?holo=true&pv=true&mic=false&loopback=false&RenderFromCamera=true", null);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("Could not start recording");
+                    Debug.LogError(e);
+                }
                 
-                _fileStream.Position = 0;
             }
-
-            if (RecordToggle.isOn && !IsIntroduction)
+            else
             {
-                _fileInputStream = _inputSplitStream.GetForwardReadOnlyStream();
-                _fileInputStream.CopyToAsync(_fileStream,81920,_cancellationTokenSource.Token);
-            }
+                StopStreams();
 
-            ProcessStartInfo info = new ProcessStartInfo()
-            {
+                _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
+                _inputSplitStream = new ReadableSplitStream(_inputStream);
+
+                _cancellationTokenSource = new CancellationTokenSource();
+            
+                if (RecordToggle.isOn)
+                {
 #if UNITY_EDITOR
-                FileName = Path.Combine(Application.dataPath, "..", "ffmpeg", "ffplay.exe"),
+                    _fileStream = File.Create(Path.Combine(Application.dataPath,"..",_codename + "_" + setup + ".mp4"));
 #else
-                FileName = Path.Combine(Path.GetFullPath("."), "ffmpeg", "ffplay.exe"),
+                    _fileStream = File.Create(Path.Combine(Application.persistentDataPath,_codename + "_" + setup + ".mp4"));
 #endif
                 
-                Arguments =
-                    "-i -",
-                RedirectStandardInput = true,
-                UseShellExecute = false
-            };
-            
-            _ffplayProcess = Process.Start(info);
-            _ffplayInputStream = _inputSplitStream.GetForwardReadOnlyStream();
-            _ffplayInputStream.CopyToAsync(_ffplayProcess.StandardInput.BaseStream, 81920, _cancellationTokenSource.Token);
+                    _fileStream.Position = 0;
+                }
 
-            _inputSplitStream.StartReadAhead();
+                if (RecordToggle.isOn && !IsIntroduction)
+                {
+                    _fileInputStream = _inputSplitStream.GetForwardReadOnlyStream();
+                    _fileInputStream.CopyToAsync(_fileStream,81920,_cancellationTokenSource.Token);
+                }
+
+                ProcessStartInfo info = new ProcessStartInfo()
+                {
+#if UNITY_EDITOR
+                    FileName = Path.Combine(Application.dataPath, "..", "ffmpeg", "ffplay.exe"),
+#else
+                    FileName = Path.Combine(Path.GetFullPath("."), "ffmpeg", "ffplay.exe"),
+#endif
+                
+                    Arguments =
+                        "-i -",
+                    RedirectStandardInput = true,
+                    UseShellExecute = false
+                };
+            
+                _ffplayProcess = Process.Start(info);
+                _ffplayInputStream = _inputSplitStream.GetForwardReadOnlyStream();
+                _ffplayInputStream.CopyToAsync(_ffplayProcess.StandardInput.BaseStream, 81920, _cancellationTokenSource.Token);
+
+                _inputSplitStream.StartReadAhead();
+            }
         }
         
         var msg = new NetworkMessages.StartTrial()
@@ -253,41 +274,49 @@ public class MasterManager : MonoBehaviour
     
     public void IntroductionOccGrab()
     {
+        _setup = 1;
         StartTrial(true,1);
     }
 
     public void StartOccGrab()
     {
+        _setup = 1;
         StartTrial(false,1);
     }
 
     public void IntroductionNoOccGrab()
     {
+        _setup = 2;
         StartTrial(true,2);
     }
 
     public void StartNoOccGrab()
     {
+        _setup = 2;
         StartTrial(false,2);
     }
 
     public void IntroductionOccTouch()
     {
+        _setup = 3;
         StartTrial(true,3);
     }
 
     public void StartOccTouch()
     {
+        _setup = 3;
         StartTrial(false,3);
     }
 
     public void IntroductionNoOccTouch()
     {
+        _setup = 4;
         StartTrial(true,4);
     }
 
     public void StartNoOccTouch()
     {
+        _setup = 4;
         StartTrial(false,4);
     }
 
@@ -344,61 +373,105 @@ public class MasterManager : MonoBehaviour
 
     private void StopStreams()
     {
-        if (_inputSplitStream != null && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
+        if (RecordOnDevice.isOn)
         {
-            if (_ffplayProcess != null && !_ffplayProcess.HasExited)
+            try
             {
-                _ffplayProcess.Kill();
+                var result = _http.PostAsync("http://" + HololensIPInput.text.Trim() +
+                                             "/api/holographic/mrc/Video/Control/Stop", null).Result;
+                if (result.StatusCode == HttpStatusCode.OK)
+                {
+                    var jsonString = result.Content.ReadAsStringAsync().Result;
+                    var response = JsonConvert.DeserializeObject<dynamic>(jsonString);
+
+#if UNITY_EDITOR
+                    _fileStream =
+                        File.Create(Path.Combine(Application.dataPath, "..", _codename + "_" + _setup + ".mp4"));
+#else
+                _fileStream =
+ File.Create(Path.Combine(Application.persistentDataPath,_codename + "_" + _setup + ".mp4"));
+#endif
+                    var filename = Convert.ToBase64String(Encoding.UTF8.GetBytes((string) response.VideoFileName));
+                    var message = _http.GetAsync("http://" + HololensIPInput.text.Trim() +
+                                                 "/api/holographic/mrc/file?filename=" + filename + "&op=stream",
+                        HttpCompletionOption.ResponseContentRead).Result;
+                    var stream = message.Content.ReadAsStreamAsync().Result;
+                    stream.CopyTo(_fileStream);
+                    stream.Flush();
+                    if (_fileStream != null)
+                        _fileStream.Flush();
+                    stream.Close();
+                    if (_fileStream != null)
+                        _fileStream.Close();
+                    _fileStream = null;
+                }
             }
-            _ffplayProcess = null;
+            catch (Exception e)
+            {
+                Debug.Log("Could not stop recording:");
+                Debug.LogError(e);
+            }
             
-            try
+            
+        }
+        else
+        {
+            if (_inputSplitStream != null && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
             {
-                if (_inputStream != null)
-                    _inputStream.Flush();
-                if (_ffplayInputStream != null)
-                    _ffplayInputStream.Flush();
-                if (_fileInputStream != null)
-                    _fileInputStream.Flush();
-                if (_fileStream != null)
-                    _fileStream.Flush();
-            }
-            catch
-            {
-                // ignored
-            }
+                if (_ffplayProcess != null && !_ffplayProcess.HasExited)
+                {
+                    _ffplayProcess.Kill();
+                }
+                _ffplayProcess = null;
+            
+                try
+                {
+                    if (_inputStream != null)
+                        _inputStream.Flush();
+                    if (_ffplayInputStream != null)
+                        _ffplayInputStream.Flush();
+                    if (_fileInputStream != null)
+                        _fileInputStream.Flush();
+                    if (_fileStream != null)
+                        _fileStream.Flush();
+                }
+                catch
+                {
+                    // ignored
+                }
 
-            try
-            {
-                if (_inputStream != null)
-                    _inputStream.Close();
-                if (_ffplayInputStream != null)
-                    _ffplayInputStream.Close();
-                if (_fileInputStream != null)
-                    _fileInputStream.Close();
-                if (_fileStream != null)
-                    _fileStream.Close();
-                _inputSplitStream.Dispose();
-            }
-            catch
-            {
-                // ignored
-            }
+                try
+                {
+                    if (_inputStream != null)
+                        _inputStream.Close();
+                    if (_ffplayInputStream != null)
+                        _ffplayInputStream.Close();
+                    if (_fileInputStream != null)
+                        _fileInputStream.Close();
+                    if (_fileStream != null)
+                        _fileStream.Close();
+                    _inputSplitStream.Dispose();
+                }
+                catch
+                {
+                    // ignored
+                }
 
-            try
-            {
-                _cancellationTokenSource.Cancel();
-            }
-            catch
-            {
-                // ignored
-            }
+                try
+                {
+                    _cancellationTokenSource.Cancel();
+                }
+                catch
+                {
+                    // ignored
+                }
 
-            _inputStream = null;
-            _ffplayInputStream = null;
-            _fileInputStream = null;
-            _fileStream = null;
-            _inputSplitStream = null;
+                _inputStream = null;
+                _ffplayInputStream = null;
+                _fileInputStream = null;
+                _fileStream = null;
+                _inputSplitStream = null;
+            }
         }
     }
     
