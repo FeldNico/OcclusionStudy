@@ -193,9 +193,10 @@ public class MasterManager : MonoBehaviour
     {
         if (_networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
         {
-            if (RecordOnDevice.isOn && !IsIntroduction)
+            StopStreams();
+            if (RecordToggle.isOn && RecordOnDevice.isOn && !IsIntroduction)
             {
-                StopStreams();
+                
                 try
                 {
                     _http.PostAsync(
@@ -207,12 +208,9 @@ public class MasterManager : MonoBehaviour
                     Debug.Log("Could not start recording");
                     Debug.LogError(e);
                 }
-                
             }
             else
             {
-                StopStreams();
-
                 _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
                 _inputSplitStream = new ReadableSplitStream(_inputStream);
 

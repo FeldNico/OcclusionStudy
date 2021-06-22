@@ -5543,7 +5543,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Do Record?
+  m_Text: Record At All
 --- !u!222 &1032431613
 CanvasRenderer:
   m_ObjectHideFlags: 0
