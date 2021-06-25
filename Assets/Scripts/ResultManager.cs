@@ -107,13 +107,9 @@ public class ResultManager : MonoBehaviour
                 SearchTaskTime = Time.time,
                 SelectTaskTime = 0,
                 SelectTaskTimeShort = 0,
+                Grabs =  0,
+                Releases = 0
             };
-
-            if (_orb.IsPhysicalMenu)
-            {
-                _currentResult.Grabs = 0;
-                _currentResult.Releases = 0;
-            }
 
             var camPos = Camera.main.transform.position;
             camPos.y = _cloud.transform.position.y;
@@ -166,10 +162,7 @@ public class ResultManager : MonoBehaviour
                                    _cloud.ShapeType.MeshGameObjectName == _targetItem.ShapeType.MeshGameObjectName &&
                                    _cloud.TextureType.MaterialGameObjectName == _targetItem.TextureType.MaterialGameObjectName;
 
-        if (!IsIntroduction)
-        {
-            PrintResult(_currentResult);
-        }
+        PrintResult(_currentResult);
 
         _trialCount++;
         
@@ -284,16 +277,16 @@ public class ResultManager : MonoBehaviour
         var filename = result.Codename + "_" + scenario + "_" + DateTime.Now.Day +
                        "_" + DateTime.Now.Month + "_" + DateTime.Now.Year+".csv";
 #if UNITY_EDITOR
-        var platformDependendPath = Application.dataPath;
+        var platformDependentPath = Application.dataPath;
 #else
-        var platformDependendPath = Application.persistentDataPath;
+        var platformDependentPath = Application.persistentDataPath;
 #endif
-        if (!Directory.Exists(Path.Combine(platformDependendPath, "Results")))
+        if (!Directory.Exists(Path.Combine(platformDependentPath, "Results")))
         {
-            Directory.CreateDirectory(Path.Combine(platformDependendPath, "Results"));
+            Directory.CreateDirectory(Path.Combine(platformDependentPath, "Results"));
         }
         
-        var path = Path.Combine(platformDependendPath, "Results",filename);
+        var path = Path.Combine(platformDependentPath, "Results",filename);
 
         if (!File.Exists(path))
         {

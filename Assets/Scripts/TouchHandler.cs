@@ -10,6 +10,9 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
     private GameObject _dummy;
     private Vector3 _fingerTipPosition;
 
+    private bool _currentlyTouched = false;
+    private bool _blacklisted = false;
+    
     private void Awake()
     {
         _item = GetComponent<RadialMenuItem>();
@@ -22,6 +25,11 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
 
     public void OnTouchStarted(HandTrackingInputEventData eventData)
     {
+        if (_currentlyTouched || _blacklisted)
+        {
+            return;
+        }
+
         if (_dummy != null)
         {
             DestroyImmediate(_dummy);
@@ -32,7 +40,7 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
             out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,
             Handedness.Right, out MixedRealityPose rightTipPose))
         {
-            if (Vector3.Distance(leftTipPose.Position, rightTipPose.Position) < 0.06f)
+            if (Vector3.Distance(leftTipPose.Position, rightTipPose.Position) < 0.1f)
             {
                 return;
             }
@@ -40,6 +48,13 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
 
         if (eventData != null && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, eventData.Handedness, out MixedRealityPose pose))
         {
+            if (Vector3.Distance(Camera.main.transform.position, pose.Position) >
+                Vector3.Distance(Camera.main.transform.position, transform.position))
+            {
+                _blacklisted = true;
+                return;
+            }
+            
             _dummy = new GameObject(name + "_dummy");
             _dummy.AddComponent<MeshFilter>().mesh = GetComponent<MeshFilter>().mesh;
             _dummy.AddComponent<MeshRenderer>().material = GetComponent<Renderer>().material;
@@ -50,15 +65,24 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
             GetComponent<Renderer>().enabled = false;
 
             _fingerTipPosition = pose.Position;
+            _currentlyTouched = true;
         }
     }
 
     public void OnTouchCompleted(HandTrackingInputEventData eventData)
     {
+        _currentlyTouched = false;
+
         if (_dummy != null)
         {
             DestroyImmediate(_dummy);
             _fingerTipPosition = Vector3.zero;
+        }
+        
+        if (_blacklisted)
+        {
+            _blacklisted = false;
+            return;
         }
 
         GetComponent<Renderer>().enabled = true;
@@ -78,7 +102,7 @@ public class TouchHandler : MonoBehaviour, IMixedRealityTouchHandler
 
     public void OnTouchUpdated(HandTrackingInputEventData eventData)
     {
-        if (_dummy != null)
+        if (_dummy != null && !_blacklisted)
         {
             if (eventData != null && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, eventData.Handedness,
                 out MixedRealityPose pose))

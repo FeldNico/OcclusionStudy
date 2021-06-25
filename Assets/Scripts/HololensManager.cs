@@ -34,8 +34,6 @@ public class HololensManager : MonoBehaviour
 
     public UnityAction TriggerMenu;
 
-    public Handedness ForcedHandedness;
-    
     private Camera _camera;
     private InteractionOrb _orb;
     private bool _canShowMenu = false;
@@ -110,8 +108,6 @@ public class HololensManager : MonoBehaviour
                 {
                     MainText.text = "Bitte warten Sie bis der Versuchsleiter den Versuch startet.";
                 }
-
-                ForcedHandedness = questionnaire.Handedness;
             });
         };
     }

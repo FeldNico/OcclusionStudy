@@ -82,8 +82,7 @@ public class TabletManager : MonoBehaviour
                         _web.SetVisibility(false);
                         NetworkClient.Send(new NetworkMessages.Questionnaire()
                         {
-                            Type = -1,
-                            Handedness = _handedness
+                            Type = -1
                         });
                     }
                 }

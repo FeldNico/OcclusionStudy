@@ -49,7 +49,6 @@ public class NetworkMessages : MonoBehaviour
     public struct Questionnaire : NetworkMessage
     {
         public int Type;
-        public Handedness Handedness;
     }
 
     public struct TrialInformation : NetworkMessage
