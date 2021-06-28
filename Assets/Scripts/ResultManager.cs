@@ -212,6 +212,7 @@ public class ResultManager : MonoBehaviour
                 _hololensManager.MainText.text = "Durchlauf beendet.\nBitte nehmen Sie die Brille ab und begeben sich wieder zum Tablet.";
                 NetworkClient.Send(new NetworkMessages.Questionnaire()
                 {
+                    Codename = _currentResult.Codename,
                     Type = _hololensManager.Type
                 });
                 Destroy(_orb.gameObject);

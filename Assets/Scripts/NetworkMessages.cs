@@ -48,6 +48,7 @@ public class NetworkMessages : MonoBehaviour
 
     public struct Questionnaire : NetworkMessage
     {
+        public string Codename;
         public int Type;
     }
 

@@ -329,6 +329,7 @@ public class MasterManager : MonoBehaviour
     {
         _networkManager.GetTabletConnection().Send(new NetworkMessages.Questionnaire()
         {
+            Codename = _codename,
             Type = 0
         });
         MainText.text = "Starting Questionaire";
@@ -338,6 +339,7 @@ public class MasterManager : MonoBehaviour
     {
         _networkManager.GetTabletConnection().Send(new NetworkMessages.Questionnaire()
         {
+            Codename = _codename,
             Type = 5
         });
         MainText.text = "Final Questionaire";

@@ -105,6 +105,10 @@ public class TabletManager : MonoBehaviour
             });
             NetworkClient.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>
             {
+                if (String.IsNullOrEmpty(_codename))
+                {
+                    _codename = questionnaire.Codename;
+                }
                 Text.text = "Warten...";
                 #if UNITY_ANDROID
                 _web.SetVisibility(true);
