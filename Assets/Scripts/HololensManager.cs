@@ -74,13 +74,28 @@ public class HololensManager : MonoBehaviour
 
             NetworkClient.RegisterHandler<NetworkMessages.CloseScene>(scene =>
             {
-                var coroutine = FindObjectOfType<ResultManager>()._restingCoroutine;
+                var resultManager = FindObjectOfType<ResultManager>();
+                var coroutine = resultManager._restingCoroutine;
                 if (coroutine != null)
                 {
                     StopCoroutine(coroutine);
                 }
                 
+                if (resultManager.IsIntroduction)
+                {
+                    if (resultManager.CurrentResult.SearchTaskTime == 0f)
+                    {
+                        resultManager.CurrentResult.SearchTaskTime = Time.time - resultManager.CurrentResult.SearchTaskTime;
+                        resultManager.CurrentResult.SelectTaskTime = Time.time;
+                    }
+            
+                    resultManager.CurrentResult.SelectTaskTime = Time.time - resultManager.CurrentResult.SelectTaskTime;
+                    resultManager.CurrentResult.SelectTaskTimeShort = Time.time - resultManager.CurrentResult.SelectTaskTimeShort;
+                    resultManager.PrintResult(resultManager.CurrentResult);
+                }
+                
                 FindObjectOfType<VideoPlayer>().Stop();
+                FindObjectOfType<VideoPlayer>().GetComponent<Renderer>().enabled = false;
 
                 MainText.text = "Bitte warten Sie bis der Versuchsleiter den Versuch startet.";
 
@@ -98,8 +113,7 @@ public class HololensManager : MonoBehaviour
                 {
                     DestroyImmediate(CloudAnchor.transform.GetChild(i).gameObject);
                 }
-
-                FindObjectOfType<VideoPlayer>().GetComponent<Renderer>().enabled = false;
+                
             });
             
             NetworkClient.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>

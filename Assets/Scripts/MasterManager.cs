@@ -191,7 +191,7 @@ public class MasterManager : MonoBehaviour
 
     public async void StartTrial(bool IsIntroduction, int setup)
     {
-        if (_networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
+        if (_networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
         {
             StopStreams();
             if (RecordToggle.isOn && RecordOnDevice.isOn && !IsIntroduction)
@@ -201,7 +201,7 @@ public class MasterManager : MonoBehaviour
                 {
                     _http.PostAsync(
                         "http://" + HololensIPInput.text.Trim() +
-                        "/API/Holographic/MRC/Video/Control/Start?holo=true&pv=true&mic=false&loopback=false&RenderFromCamera=true", null);
+                        "/API/Holographic/MRC/Video/Control/Start?holo=true&pv=true&mic=false&loopback=false&RenderFromCamera=true&vstab=true", null);
                 }
                 catch (Exception e)
                 {
@@ -211,7 +211,7 @@ public class MasterManager : MonoBehaviour
             }
             else
             {
-                _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false");
+                _inputStream = await _http.GetStreamAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/Stream/live.mp4?MIC=false&Loopback=false&vstab=true");
                 _inputSplitStream = new ReadableSplitStream(_inputStream);
 
                 _cancellationTokenSource = new CancellationTokenSource();
@@ -345,7 +345,7 @@ public class MasterManager : MonoBehaviour
         MainText.text = "Final Questionaire";
     }
 
-    public async void RestartTablet()
+    public async void OpenTablet()
     {
         var client = new AdbClient();
         var device = client.GetDevices().FirstOrDefault(data => data.Model == "SM_T720");
@@ -354,8 +354,7 @@ public class MasterManager : MonoBehaviour
             Debug.LogError("Tablet not found");
             return;
         }
-
-        await client.ExecuteRemoteCommandAsync("am force-stop com.DefaultCompany.OcclusionStudy", device,null,CancellationToken.None);
+        
         await client.ExecuteRemoteCommandAsync("monkey -p com.DefaultCompany.OcclusionStudy -c android.intent.category.LAUNCHER 1", device,null,CancellationToken.None);
     }
 
@@ -416,7 +415,7 @@ public class MasterManager : MonoBehaviour
         }
         else
         {
-            if (_inputSplitStream != null && _networkManager.GetHololensConnection().address != "::ffff:136.199.52.21")
+            if (_inputSplitStream != null && _networkManager.GetHololensConnection().address != "::ffff:192.168.178.71")
             {
                 if (_ffplayProcess != null && !_ffplayProcess.HasExited)
                 {

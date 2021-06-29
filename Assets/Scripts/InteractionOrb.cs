@@ -156,9 +156,9 @@ public class InteractionOrb : MonoBehaviour
         }
 
         var v = Camera.main.transform.position;
-        v.y = MenuRoot.transform.position.y;
-        MenuRoot.transform.LookAt(v,Vector3.up);
-        MenuRoot.transform.localRotation *= Quaternion.AngleAxis(180f,Vector3.up);
+        v.y = transform.position.y;
+        transform.LookAt(v,Vector3.up);
+        transform.localRotation *= Quaternion.AngleAxis(180f,Vector3.up);
         
         GetComponent<Renderer>().enabled =  !GetComponent<Renderer>().enabled;
         GetComponent<Collider>().enabled =  !GetComponent<Collider>().enabled;
@@ -225,9 +225,9 @@ public class InteractionOrb : MonoBehaviour
                 start += Time.deltaTime;
             }
             IsCurrentlyManipulated = false;
-            transform.localPosition = Vector3.zero;
-            //transform.localRotation = Quaternion.identity;
             MenuRoot.transform.parent = transform;
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
             if (_rigidbody)
             {
                 _rigidbody.velocity = Vector3.zero;

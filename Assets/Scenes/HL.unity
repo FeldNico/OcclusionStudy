@@ -521,7 +521,7 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   transport: {fileID: 661286116}
-  networkAddress: 136.199.52.20
+  networkAddress: 192.168.178.71
   maxConnections: 100
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
@@ -560,7 +560,6 @@ MonoBehaviour:
     type: 3}
   CloudAnchor: {fileID: 639674541}
   Type: 0
-  ForcedHandedness: 0
 --- !u!114 &661286119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -870,7 +869,7 @@ PrefabInstance:
     - target: {fileID: 2461738174043341970, guid: c63a6247a5e361f4f8433c282bd2c8b0,
         type: 3}
       propertyPath: IP
-      value: 136.199.52.119
+      value: 192.168.178.43
       objectReference: {fileID: 0}
     - target: {fileID: 2461738174043341971, guid: c63a6247a5e361f4f8433c282bd2c8b0,
         type: 3}
