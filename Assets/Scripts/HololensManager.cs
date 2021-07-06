@@ -246,7 +246,7 @@ public class HololensManager : MonoBehaviour
                 camToCloud.y = -0.2f;
                 camToCloud.Normalize();
 
-                InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.5f;
+                InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.35f - Vector3.up * 0.3f;
 
                 var orbToCloud = CloudAnchor.transform.position - InteractionOrbAnchor.transform.position;
                 orbToCloud.y = 0f;
