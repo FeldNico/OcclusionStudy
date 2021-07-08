@@ -14,13 +14,11 @@ public class InteractionOrb : MonoBehaviour
 
     public bool IsPhysicalMenu;
     public bool HasOcclusion;
-    
-    [HideInInspector]
-    public RadialMenuItem CurrentSelected;
-    [HideInInspector]
-    public RadialMenuItem MenuRoot;
+
+    [HideInInspector] public RadialMenuItem CurrentSelected;
+    [HideInInspector] public RadialMenuItem MenuRoot;
     public bool IsCurrentlyManipulated { private set; get; } = false;
-    
+
     private ObjectManipulator _manipulator;
     private TouchHandler _touchHandler;
     private NearInteractionTouchable _touchable;
@@ -29,11 +27,12 @@ public class InteractionOrb : MonoBehaviour
     private Rigidbody _rigidbody;
 
     private Color _standardColor;
-    
+
 
     public void Initialize(bool IsOcclusionEnabled, bool IsPhysical)
     {
-        MixedRealityHandTrackingProfile handTrackingProfile = CoreServices.InputSystem?.InputSystemProfile.HandTrackingProfile;
+        MixedRealityHandTrackingProfile handTrackingProfile =
+            CoreServices.InputSystem?.InputSystemProfile.HandTrackingProfile;
         if (handTrackingProfile != null)
         {
             handTrackingProfile.EnableHandMeshVisualization = IsOcclusionEnabled;
@@ -41,12 +40,12 @@ public class InteractionOrb : MonoBehaviour
 
         HasOcclusion = IsOcclusionEnabled;
         IsPhysicalMenu = IsPhysical;
-        
+
         if (MenuRoot != null)
         {
             DestroyImmediate(MenuRoot.gameObject);
         }
-        
+
         MenuRoot = new GameObject("MenuRoot").AddComponent<RadialMenuItem>();
         MenuRoot.transform.parent = transform;
         MenuRoot.transform.localPosition = Vector3.zero;
@@ -61,7 +60,7 @@ public class InteractionOrb : MonoBehaviour
         {
             DestroyImmediate(_collider);
         }
-        
+
         if (IsPhysical)
         {
             _rigidbody = GetComponent<Rigidbody>();
@@ -81,20 +80,21 @@ public class InteractionOrb : MonoBehaviour
                 _manipulator = gameObject.AddComponent<ObjectManipulator>();
                 _manipulator.AllowFarManipulation = false;
             }
-            
+
 
             _collider = gameObject.AddComponent<SphereCollider>();
-            
+
             _nearInteraction = GetComponent<NearInteractionGrabbable>();
             if (_nearInteraction == null)
             {
                 _nearInteraction = gameObject.AddComponent<NearInteractionGrabbable>();
             }
-            
+
             _manipulator.OnManipulationStarted.AddListener(OnManipulationStart);
             _manipulator.OnManipulationEnded.AddListener(OnManipulationEnd);
-            
+
             StartCoroutine(Wait());
+
             IEnumerator Wait()
             {
                 yield return null;
@@ -103,7 +103,6 @@ public class InteractionOrb : MonoBehaviour
                 DestroyImmediate(MenuRoot.GetComponent<ObjectManipulator>());
                 DestroyImmediate(MenuRoot.GetComponent<NearInteractionGrabbable>());
             }
-            
         }
         else
         {
@@ -113,6 +112,7 @@ public class InteractionOrb : MonoBehaviour
             {
                 _touchHandler = gameObject.AddComponent<TouchHandler>();
             }
+
             _touchable = GetComponent<NearInteractionTouchable>();
             if (_touchable == null)
             {
@@ -120,6 +120,7 @@ public class InteractionOrb : MonoBehaviour
             }
 
             StartCoroutine(Wait());
+
             IEnumerator Wait()
             {
                 yield return null;
@@ -142,7 +143,7 @@ public class InteractionOrb : MonoBehaviour
     private void TriggerMenu()
     {
         _colliderCount = 0;
-        
+
         if (MenuRoot != null && MenuRoot.GetComponent<Collider>() != null)
         {
             if (MenuRoot.IsExpanded)
@@ -156,14 +157,15 @@ public class InteractionOrb : MonoBehaviour
         }
 
         var v = Camera.main.transform.position;
-        v.y = transform.position.y;
-        transform.LookAt(v,Vector3.up);
-        transform.localRotation *= Quaternion.AngleAxis(180f,Vector3.up);
-        
-        GetComponent<Renderer>().enabled =  !GetComponent<Renderer>().enabled;
-        GetComponent<Collider>().enabled =  !GetComponent<Collider>().enabled;
+        //v.y = transform.position.y;
+        transform.localRotation = Quaternion.identity;
+        transform.LookAt(v, Vector3.up);
+        transform.localRotation *= Quaternion.AngleAxis(180f, Vector3.up);
+
+        GetComponent<Renderer>().enabled = !GetComponent<Renderer>().enabled;
+        GetComponent<Collider>().enabled = !GetComponent<Collider>().enabled;
     }
-    
+
     private RadialMenuItem CreateMenuItem(RadialMenuItemMetadata metadata)
     {
         var go = Instantiate(Resources.Load<GameObject>(metadata.Prefab));
@@ -178,6 +180,7 @@ public class InteractionOrb : MonoBehaviour
         {
             item.Radius = metadata.Radius;
         }
+
         item.Type = metadata.Type;
 
         if (metadata.Children != null)
@@ -198,7 +201,7 @@ public class InteractionOrb : MonoBehaviour
         MenuRoot.StartHover();
 
         GetComponent<Renderer>().material.color = Color.blue;
-        
+
         OnGrab?.Invoke();
         OnInteraction?.Invoke();
     }
@@ -206,14 +209,15 @@ public class InteractionOrb : MonoBehaviour
     public void OnManipulationEnd(ManipulationEventData eventData)
     {
         _colliderCount = 0;
-        
+
         MenuRoot.Hide(false);
 
         GetComponent<Renderer>().material.color = _standardColor;
 
         OnRelease?.Invoke();
-        
+
         StartCoroutine(Animate());
+
         IEnumerator Animate()
         {
             var start = 0f;
@@ -224,26 +228,30 @@ public class InteractionOrb : MonoBehaviour
                 transform.position = pos;
                 start += Time.deltaTime;
             }
+
             IsCurrentlyManipulated = false;
             MenuRoot.transform.parent = transform;
+            MenuRoot.transform.localPosition = Vector3.zero;
+            MenuRoot.transform.localRotation = Quaternion.identity;
             transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
             if (_rigidbody)
             {
                 _rigidbody.velocity = Vector3.zero;
                 _rigidbody.angularVelocity = Vector3.zero;
             }
         }
+
         if (CurrentSelected != null)
         {
             GetComponent<AudioSource>().PlayOneShot(FindObjectOfType<HololensManager>().SelectSound);
             CurrentSelected.Select();
         }
+
         CurrentSelected = null;
-        
     }
 
     private int _colliderCount = 0;
+
     private void OnTriggerEnter(Collider other)
     {
         RadialMenuItem item = other.GetComponent<RadialMenuItem>();

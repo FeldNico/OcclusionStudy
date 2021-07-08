@@ -13,15 +13,14 @@ using UnityEngine.Video;
 
 public class HololensManager : MonoBehaviour
 {
-
     public VideoClip Video1;
     public VideoClip Video2;
     public VideoClip Video3;
     public VideoClip Video4;
-    
+
     public AudioClip HoverSound;
     public AudioClip SelectSound;
-    
+
     public TMP_Text MainText;
     public GameObject InteractionOrbPrefab;
     public GameObject InteractionOrbAnchor;
@@ -29,6 +28,7 @@ public class HololensManager : MonoBehaviour
     public GameObject TargetAnchor;
     public GameObject CloudPrefab;
     public GameObject CloudAnchor;
+    public float OrbHeight;
 
     public int Type;
 
@@ -37,8 +37,6 @@ public class HololensManager : MonoBehaviour
     private Camera _camera;
     private InteractionOrb _orb;
     private bool _canShowMenu = false;
-    private float _orbHeight;
-    
 
     public void Start()
     {
@@ -55,7 +53,7 @@ public class HololensManager : MonoBehaviour
             TriggerMenu?.Invoke();
             _canShowMenu = true;
         };
-        
+
         FindObjectOfType<CustomNetworkManager>().OnConneting += () =>
         {
             NetworkClient.RegisterHandler<NetworkMessages.StartTrial>(trial =>
@@ -66,7 +64,7 @@ public class HololensManager : MonoBehaviour
                 Type = trial.Type;
                 MainText.text = "";
             });
-            
+
             NetworkClient.RegisterHandler<NetworkMessages.ConfirmCodename>(codename =>
             {
                 FindObjectOfType<ResultManager>().Codename = codename.Codename;
@@ -80,20 +78,22 @@ public class HololensManager : MonoBehaviour
                 {
                     StopCoroutine(coroutine);
                 }
-                
+
                 if (resultManager.IsIntroduction)
                 {
                     if (resultManager.CurrentResult.SearchTaskTime == 0f)
                     {
-                        resultManager.CurrentResult.SearchTaskTime = Time.time - resultManager.CurrentResult.SearchTaskTime;
+                        resultManager.CurrentResult.SearchTaskTime =
+                            Time.time - resultManager.CurrentResult.SearchTaskTime;
                         resultManager.CurrentResult.SelectTaskTime = Time.time;
                     }
-            
+
                     resultManager.CurrentResult.SelectTaskTime = Time.time - resultManager.CurrentResult.SelectTaskTime;
-                    resultManager.CurrentResult.SelectTaskTimeShort = Time.time - resultManager.CurrentResult.SelectTaskTimeShort;
+                    resultManager.CurrentResult.SelectTaskTimeShort =
+                        Time.time - resultManager.CurrentResult.SelectTaskTimeShort;
                     resultManager.PrintResult(resultManager.CurrentResult);
                 }
-                
+
                 FindObjectOfType<VideoPlayer>().Stop();
                 FindObjectOfType<VideoPlayer>().GetComponent<Renderer>().enabled = false;
 
@@ -113,9 +113,8 @@ public class HololensManager : MonoBehaviour
                 {
                     DestroyImmediate(CloudAnchor.transform.GetChild(i).gameObject);
                 }
-                
             });
-            
+
             NetworkClient.RegisterHandler<NetworkMessages.Questionnaire>(questionnaire =>
             {
                 if (questionnaire.Type == -1)
@@ -126,16 +125,20 @@ public class HololensManager : MonoBehaviour
         };
     }
 
-    public void StartTrial(bool isIntroduction, bool isOcclusion, bool isPhysical, int iterations, int trialCount, float restingTime)
+    public void StartTrial(bool isIntroduction, bool isOcclusion, bool isPhysical, int iterations, int trialCount,
+        float restingTime)
     {
-        _orbHeight =  (GameObject.Find("Floor").transform.position - Camera.main.transform.position).y * (0.720f / 0.936f) ;
-        
+        OrbHeight = GameObject.Find("Floor").transform.position.y +
+                    (Camera.main.transform.position -
+                     GameObject.Find("Floor").transform.position).y *
+                    (1.3625f / 1.735f);
+
         var videoPlayer = FindObjectOfType<VideoPlayer>();
-        
+
         if (isIntroduction)
         {
             videoPlayer.GetComponent<Renderer>().enabled = true;
-            
+
             if (isPhysical)
             {
                 videoPlayer.clip = isOcclusion ? Video1 : Video2;
@@ -144,7 +147,7 @@ public class HololensManager : MonoBehaviour
             {
                 videoPlayer.clip = isOcclusion ? Video3 : Video4;
             }
-            
+
             videoPlayer.Stop();
             videoPlayer.Play();
         }
@@ -153,17 +156,17 @@ public class HololensManager : MonoBehaviour
             videoPlayer.GetComponent<Renderer>().enabled = false;
             videoPlayer.Stop();
         }
-        
+
         for (int i = 0; i < InteractionOrbAnchor.transform.childCount; i++)
         {
             DestroyImmediate(InteractionOrbAnchor.transform.GetChild(i).gameObject);
         }
-        
+
         for (int i = 0; i < TargetAnchor.transform.childCount; i++)
         {
             DestroyImmediate(TargetAnchor.transform.GetChild(i).gameObject);
         }
-        
+
         for (int i = 0; i < CloudAnchor.transform.childCount; i++)
         {
             DestroyImmediate(CloudAnchor.transform.GetChild(i).gameObject);
@@ -174,13 +177,13 @@ public class HololensManager : MonoBehaviour
         _orb.transform.localPosition = Vector3.zero;
         _orb.transform.localRotation = Quaternion.identity;
         _orb.transform.localScale = InteractionOrbPrefab.transform.localScale;
-        
+
         var target = Instantiate(TargetPrefab).GetComponent<TargetItem>();
         target.transform.parent = TargetAnchor.transform;
         target.transform.localPosition = Vector3.zero;
         target.transform.localRotation = Quaternion.identity;
         target.transform.localScale = TargetPrefab.transform.localScale;
-        
+
         var cloud = Instantiate(CloudPrefab).GetComponent<Cloud>();
         cloud.transform.parent = CloudAnchor.transform;
         cloud.transform.localPosition = Vector3.zero;
@@ -188,49 +191,47 @@ public class HololensManager : MonoBehaviour
         cloud.transform.localScale = CloudPrefab.transform.localScale;
 
         StartCoroutine(Wait());
+
         IEnumerator Wait()
         {
             yield return new WaitForEndOfFrame();
-            _orb.Initialize(isOcclusion,isPhysical);
+            _orb.Initialize(isOcclusion, isPhysical);
             yield return new WaitForEndOfFrame();
-            FindObjectOfType<ResultManager>().Initialize(isIntroduction,iterations,trialCount,restingTime);
+            FindObjectOfType<ResultManager>().Initialize(isIntroduction, iterations, trialCount, restingTime);
         }
     }
 
     private Coroutine _moveOrbAnchor;
+
     public void Update()
     {
-
-        var vecAnchorToCam = _camera.transform.position - InteractionOrbAnchor.transform.position;
-        vecAnchorToCam.y = InteractionOrbAnchor.transform.position.y;
-
-        if (_canShowMenu && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Left,out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Right,out MixedRealityPose rightTipPose))
+        if (_canShowMenu &&
+            HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, Handedness.Left,
+                out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,
+                Handedness.Right, out MixedRealityPose rightTipPose))
         {
-            if (Vector3.Distance(leftTipPose.Position, rightTipPose.Position) < 0.02f )
+            if (Vector3.Distance(leftTipPose.Position, rightTipPose.Position) < 0.02f)
             {
                 _canShowMenu = false;
-                
+
                 var camToCloud = CloudAnchor.transform.position - _camera.transform.position;
+                camToCloud.y = 0;
                 camToCloud.Normalize();
 
-                var orbPos = _camera.transform.position + camToCloud * 0.3f;
-                orbPos.y = _orbHeight;
+                var orbPos = _camera.transform.position + camToCloud * (0.5f);
+                orbPos.y = OrbHeight;
                 InteractionOrbAnchor.transform.position = orbPos;
-                InteractionOrbAnchor.transform.LookAt(Camera.main.transform);
-                InteractionOrbAnchor.transform.rotation *= Quaternion.AngleAxis(180f,InteractionOrbAnchor.transform.up);
 
                 var orbToCloud = CloudAnchor.transform.position - InteractionOrbAnchor.transform.position;
                 orbToCloud.y = 0f;
                 orbToCloud.Normalize();
-                
-                var orbToCloudRight = - Vector3.Cross(orbToCloud, Vector3.up).normalized;
+
+                var orbToCloudRight = -Vector3.Cross(orbToCloud, Vector3.up).normalized;
                 TargetAnchor.transform.position = InteractionOrbAnchor.transform.position + orbToCloud * 0.15f +
                                                   orbToCloudRight * 0.14f + Vector3.up * 0.08f;
 
                 TriggerMenu?.Invoke();
             }
         }
-        
     }
-    
 }
