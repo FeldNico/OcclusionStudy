@@ -37,6 +37,7 @@ public class HololensManager : MonoBehaviour
     private Camera _camera;
     private InteractionOrb _orb;
     private bool _canShowMenu = false;
+    private float _orbHeight;
     
 
     public void Start()
@@ -59,7 +60,6 @@ public class HololensManager : MonoBehaviour
         {
             NetworkClient.RegisterHandler<NetworkMessages.StartTrial>(trial =>
             {
-                
                 StartTrial(trial.IsIntroduction, trial.IsOcclusionEnabled, trial.IsPhysical, trial.Iterations,
                     trial.TrialCount, trial.RestingTime);
                 FindObjectOfType<ResultManager>().Codename = trial.Codename;
@@ -128,6 +128,8 @@ public class HololensManager : MonoBehaviour
 
     public void StartTrial(bool isIntroduction, bool isOcclusion, bool isPhysical, int iterations, int trialCount, float restingTime)
     {
+        _orbHeight =  (GameObject.Find("Floor").transform.position - Camera.main.transform.position).y * (0.720f / 0.936f) ;
+        
         var videoPlayer = FindObjectOfType<VideoPlayer>();
         
         if (isIntroduction)
@@ -199,42 +201,8 @@ public class HololensManager : MonoBehaviour
     public void Update()
     {
 
-        /*
-        
-        var targetToOrbVec3 = InteractionOrbAnchor.transform.position - CloudAnchor.transform.position;
-        var targetToCameraVec3 = _camera.transform.position - CloudAnchor.transform.position;
-        var targetToOrb = new Vector2(targetToOrbVec3.x, targetToOrbVec3.z);
-        var targetToCamera = new Vector2(targetToCameraVec3.x, targetToCameraVec3.z);
-
-        if ( _moveOrbAnchor == null && Vector2.Angle(targetToOrb, targetToCamera) > 10f && _orb != null && !_orb.IsCurrentlyManipulated)
-        {
-            _moveOrbAnchor = StartCoroutine(Move());
-        }
-        IEnumerator Move()
-        {
-            var angle = Vector2.SignedAngle(targetToOrb, targetToCamera);
-            
-            while (Math.Abs(angle) > 0.5f && _orb != null && !_orb.IsCurrentlyManipulated && _orb.MenuRoot != null && !_orb.MenuRoot.IsExpanded)
-            {
-                InteractionOrbAnchor.transform.RotateAround(CloudAnchor.transform.position,Vector3.up, -angle * 0.03f);
-                TargetAnchor.transform.RotateAround(CloudAnchor.transform.position,Vector3.up, -angle * 0.03f);
-                
-                targetToOrbVec3 = InteractionOrbAnchor.transform.position - CloudAnchor.transform.position;
-                targetToCameraVec3 = _camera.transform.position - CloudAnchor.transform.position;
-                targetToOrb = new Vector2(targetToOrbVec3.x, targetToOrbVec3.z);
-                targetToCamera = new Vector2(targetToCameraVec3.x, targetToCameraVec3.z);
-                angle = Vector2.SignedAngle(targetToOrb, targetToCamera);
-                yield return null;
-            }
-
-            _moveOrbAnchor = null;
-        }
-*/
-        
         var vecAnchorToCam = _camera.transform.position - InteractionOrbAnchor.transform.position;
         vecAnchorToCam.y = InteractionOrbAnchor.transform.position.y;
-
-        //InteractionOrbAnchor.transform.rotation *= Quaternion.FromToRotation(InteractionOrbAnchor.transform.forward,-vecAnchorToCam);
 
         if (_canShowMenu && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Left,out MixedRealityPose leftTipPose) && HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip,Handedness.Right,out MixedRealityPose rightTipPose))
         {
@@ -243,10 +211,13 @@ public class HololensManager : MonoBehaviour
                 _canShowMenu = false;
                 
                 var camToCloud = CloudAnchor.transform.position - _camera.transform.position;
-                camToCloud.y = -0.2f;
                 camToCloud.Normalize();
 
-                InteractionOrbAnchor.transform.position = _camera.transform.position + camToCloud * 0.35f - Vector3.up * 0.3f;
+                var orbPos = _camera.transform.position + camToCloud * 0.3f;
+                orbPos.y = _orbHeight;
+                InteractionOrbAnchor.transform.position = orbPos;
+                InteractionOrbAnchor.transform.LookAt(Camera.main.transform);
+                InteractionOrbAnchor.transform.rotation *= Quaternion.AngleAxis(180f,InteractionOrbAnchor.transform.up);
 
                 var orbToCloud = CloudAnchor.transform.position - InteractionOrbAnchor.transform.position;
                 orbToCloud.y = 0f;
@@ -255,8 +226,6 @@ public class HololensManager : MonoBehaviour
                 var orbToCloudRight = - Vector3.Cross(orbToCloud, Vector3.up).normalized;
                 TargetAnchor.transform.position = InteractionOrbAnchor.transform.position + orbToCloud * 0.15f +
                                                   orbToCloudRight * 0.14f + Vector3.up * 0.08f;
-                
-                //TargetAnchor.transform.position = InteractionOrbAnchor.transform.TransformPoint(new Vector3(0.15f, 0.1f, 0.3f));
 
                 TriggerMenu?.Invoke();
             }

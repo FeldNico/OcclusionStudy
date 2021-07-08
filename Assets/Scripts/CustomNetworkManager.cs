@@ -26,8 +26,7 @@ public class CustomNetworkManager : NetworkManager
         Debug.unityLogger.logEnabled = true;
 #endif
         
-        if (DeviceType == NetworkMessages.NetworkDeviceType.Hololens ||
-            DeviceType == NetworkMessages.NetworkDeviceType.Tablet)
+        if (DeviceType == NetworkMessages.NetworkDeviceType.Tablet)
         {
             StartClient();
         }

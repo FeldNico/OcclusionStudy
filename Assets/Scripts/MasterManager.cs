@@ -32,10 +32,9 @@ public class MasterManager : MonoBehaviour
     public Toggle RecordToggle;
     public Toggle RecordOnDevice;
     public TMP_InputField HololensIPInput;
-    public TMP_InputField IPDInput;
-    public TMP_InputField IterationsCount;
     public TMP_InputField TrialCountInput;
-    public TMP_InputField RestingTimeInput;
+    public TMP_InputField DistantEyesShoulderInput;
+    public TMP_InputField DistantShoulderWaistInput;
     public GameObject SceneSelection;
 
     public UnityAction ReadyToTest;
@@ -178,12 +177,6 @@ public class MasterManager : MonoBehaviour
 #endif
     }
 
-    public void SetIPD()
-    {
-        var ipd = Convert.ToInt32(IPDInput.text);
-        _http.PostAsync("http://" + HololensIPInput.text.Trim() + "/API/Holographic/OS/Settings/IPD?ipd=" + ipd, null);
-    }
-
     public void RequestCodename()
     {
         _networkManager.GetTabletConnection().Send(new NetworkMessages.ConfirmCodename());
@@ -257,11 +250,11 @@ public class MasterManager : MonoBehaviour
         
         var msg = new NetworkMessages.StartTrial()
         {
-            Iterations = Convert.ToInt32(IterationsCount.text),
+            Iterations = 1,
             IsIntroduction = IsIntroduction,
             IsPhysical = setup == 1 || setup == 2,
             IsOcclusionEnabled = setup == 1|| setup == 3,
-            RestingTime = Convert.ToSingle(RestingTimeInput.text),
+            RestingTime = 1,
             TrialCount = Convert.ToInt32(TrialCountInput.text),
             Codename = _codename,
             Type = setup
